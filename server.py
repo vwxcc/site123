@@ -1,12 +1,9 @@
+```python
 import os
 import json
 import httpx
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-
-# =========================
-# НАСТРОЙКИ
-# =========================
 
 PORT = int(os.environ.get("PORT", "10000"))
 
@@ -17,14 +14,14 @@ API_BASE = "https://api.odirouter.ai/v1"
 API_KEYS = {
     "gpt": os.environ.get("GPTMINI_KEY"),
     "gemini": os.environ.get("PROPREW_KEY"),
-    "nano": os.environ.get("NANOB_KEY"),
+    "qwen": os.environ.get("QWEN_KEY"),
 }
 
 
-# Модели OdiRouter
 MODELS = {
     "gpt": "free-gpt-5.4-mini",
     "gemini": "free-gemini-3.1-pro-preview",
+    "qwen": "free-qwen3.5-plus",
 }
 
 
@@ -37,21 +34,13 @@ SYSTEM_PROMPT = """
 
 Не выдумывай факты.
 
-Если ты не уверен в информации, прямо скажи об этом.
+Если ты не уверен в информации, прямо сообщи об этом.
 
 Старайся давать полезный и хорошо структурированный ответ.
 """
 
 
-# =========================
-# HTTP SERVER
-# =========================
-
 class Handler(BaseHTTPRequestHandler):
-
-    # -------------------------
-    # JSON RESPONSE
-    # -------------------------
 
     def send_json(self, status, data):
 
@@ -92,10 +81,6 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-    # -------------------------
-    # OPTIONS
-    # -------------------------
-
     def do_OPTIONS(self):
 
         self.send_response(204)
@@ -118,27 +103,14 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    # -------------------------
-    # GET
-    # -------------------------
-
     def do_GET(self):
 
-        # Главная страница
-        if self.path in (
-            "/",
-            "/index.html"
-        ):
+        if self.path in ("/", "/index.html"):
 
             try:
 
-                with open(
-                    "index.html",
-                    "rb"
-                ) as file:
-
+                with open("index.html", "rb") as file:
                     body = file.read()
-
 
                 self.send_response(200)
 
@@ -156,7 +128,6 @@ class Handler(BaseHTTPRequestHandler):
 
                 self.wfile.write(body)
 
-
             except FileNotFoundError:
 
                 self.send_json(
@@ -170,7 +141,6 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
-        # Проверка сервера
         if self.path == "/health":
 
             self.send_json(
@@ -183,7 +153,6 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
-        # Остальные адреса
         self.send_json(
             404,
             {
@@ -192,13 +161,8 @@ class Handler(BaseHTTPRequestHandler):
         )
 
 
-    # -------------------------
-    # POST
-    # -------------------------
-
     def do_POST(self):
 
-        # API чата
         if self.path != "/api/chat":
 
             self.send_json(
@@ -210,10 +174,6 @@ class Handler(BaseHTTPRequestHandler):
 
             return
 
-
-        # -------------------------
-        # Читаем запрос
-        # -------------------------
 
         try:
 
@@ -243,10 +203,6 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
-        # -------------------------
-        # Сообщение
-        # -------------------------
-
         user_text = str(
             data.get(
                 "message",
@@ -268,10 +224,6 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
-        # -------------------------
-        # Выбор модели
-        # -------------------------
-
         model_key = data.get(
             "model",
             "gpt"
@@ -291,18 +243,9 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
-        model = MODELS[
-            model_key
-        ]
+        model = MODELS[model_key]
 
-
-        # -------------------------
-        # Выбор ключа
-        # -------------------------
-
-        api_key = API_KEYS.get(
-            model_key
-        )
+        api_key = API_KEYS.get(model_key)
 
 
         if not api_key:
@@ -311,16 +254,12 @@ class Handler(BaseHTTPRequestHandler):
                 500,
                 {
                     "error":
-                        "API-ключ для выбранной модели не настроен на Render"
+                        "API-ключ для выбранной модели не настроен"
                 }
             )
 
             return
 
-
-        # -------------------------
-        # История
-        # -------------------------
 
         history = data.get(
             "history",
@@ -336,28 +275,17 @@ class Handler(BaseHTTPRequestHandler):
         ]
 
 
-        if isinstance(
-            history,
-            list
-        ):
+        # Если история существует —
+        # добавляем последние сообщения.
+        if isinstance(history, list):
 
             for item in history[-20:]:
 
-                if not isinstance(
-                    item,
-                    dict
-                ):
+                if not isinstance(item, dict):
                     continue
 
-
-                role = item.get(
-                    "role"
-                )
-
-                content = item.get(
-                    "content"
-                )
-
+                role = item.get("role")
+                content = item.get("content")
 
                 if role not in (
                     "user",
@@ -365,13 +293,11 @@ class Handler(BaseHTTPRequestHandler):
                 ):
                     continue
 
-
-                if not isinstance(
-                    content,
-                    str
-                ):
+                if not isinstance(content, str):
                     continue
 
+                if not content.strip():
+                    continue
 
                 messages.append(
                     {
@@ -381,8 +307,6 @@ class Handler(BaseHTTPRequestHandler):
                 )
 
 
-        # Новое сообщение
-
         messages.append(
             {
                 "role": "user",
@@ -391,17 +315,10 @@ class Handler(BaseHTTPRequestHandler):
         )
 
 
-        # -------------------------
-        # API REQUEST
-        # -------------------------
-
         payload = {
             "model": model,
             "messages": messages,
-            "stream": True,
-            "stream_options": {
-                "include_usage": True
-            }
+            "stream": True
         }
 
 
@@ -423,10 +340,6 @@ class Handler(BaseHTTPRequestHandler):
         }
 
 
-        # -------------------------
-        # STREAM RESPONSE
-        # -------------------------
-
         try:
 
             with httpx.Client(
@@ -438,19 +351,12 @@ class Handler(BaseHTTPRequestHandler):
                 )
             ) as client:
 
-
                 with client.stream(
                     "POST",
-
                     f"{API_BASE}/chat/completions",
-
                     headers=headers,
-
                     json=payload
                 ) as response:
-
-
-                    # Ошибка API
 
                     if response.status_code >= 400:
 
@@ -459,13 +365,11 @@ class Handler(BaseHTTPRequestHandler):
                             errors="replace"
                         )
 
-
                         self.send_json(
                             502,
                             {
                                 "error":
                                     f"OdiRouter HTTP {response.status_code}",
-
                                 "details":
                                     error_text[:2000]
                             }
@@ -473,10 +377,6 @@ class Handler(BaseHTTPRequestHandler):
 
                         return
 
-
-                    # -------------------------
-                    # SSE HEADERS
-                    # -------------------------
 
                     self.send_response(200)
 
@@ -508,26 +408,16 @@ class Handler(BaseHTTPRequestHandler):
                     self.end_headers()
 
 
-                    # -------------------------
-                    # Читаем поток
-                    # -------------------------
-
                     for line in response.iter_lines():
 
                         if not line:
                             continue
 
-
-                        if not line.startswith(
-                            "data: "
-                        ):
+                        if not line.startswith("data: "):
                             continue
 
+                        data_text = line[6:].strip()
 
-                        data_text = line[6:]
-
-
-                        # Конец потока
 
                         if data_text == "[DONE]":
 
@@ -546,15 +436,10 @@ class Handler(BaseHTTPRequestHandler):
                                 data_text
                             )
 
-
                         except json.JSONDecodeError:
 
                             continue
 
-
-                        # -------------------------
-                        # TEXT
-                        # -------------------------
 
                         choices = chunk.get(
                             "choices",
@@ -569,7 +454,6 @@ class Handler(BaseHTTPRequestHandler):
                                 {}
                             )
 
-
                             text = delta.get(
                                 "content",
                                 ""
@@ -583,60 +467,18 @@ class Handler(BaseHTTPRequestHandler):
                                     "text": text
                                 }
 
-
                                 self.wfile.write(
                                     (
                                         "data: " +
-
                                         json.dumps(
                                             event,
                                             ensure_ascii=False
                                         ) +
-
                                         "\n\n"
-                                    ).encode(
-                                        "utf-8"
-                                    )
+                                    ).encode("utf-8")
                                 )
-
 
                                 self.wfile.flush()
-
-
-                        # -------------------------
-                        # USAGE
-                        # -------------------------
-
-                        usage = chunk.get(
-                            "usage"
-                        )
-
-
-                        if usage:
-
-                            event = {
-                                "type": "usage",
-                                "usage": usage
-                            }
-
-
-                            self.wfile.write(
-                                (
-                                    "data: " +
-
-                                    json.dumps(
-                                        event,
-                                        ensure_ascii=False
-                                    ) +
-
-                                    "\n\n"
-                                ).encode(
-                                    "utf-8"
-                                )
-                            )
-
-
-                            self.wfile.flush()
 
 
         except Exception as e:
@@ -646,13 +488,11 @@ class Handler(BaseHTTPRequestHandler):
                 repr(e)
             )
 
-
             try:
 
                 self.wfile.write(
                     (
                         "data: " +
-
                         json.dumps(
                             {
                                 "error":
@@ -660,25 +500,15 @@ class Handler(BaseHTTPRequestHandler):
                             },
                             ensure_ascii=False
                         ) +
-
                         "\n\n"
-                    ).encode(
-                        "utf-8"
-                    )
+                    ).encode("utf-8")
                 )
-
 
                 self.wfile.flush()
 
-
             except Exception:
-
                 pass
 
-
-    # -------------------------
-    # LOG
-    # -------------------------
 
     def log_message(
         self,
@@ -691,15 +521,8 @@ class Handler(BaseHTTPRequestHandler):
         )
 
 
-# =========================
-# START SERVER
-# =========================
-
 server = ThreadingHTTPServer(
-    (
-        "0.0.0.0",
-        PORT
-    ),
+    ("0.0.0.0", PORT),
     Handler
 )
 
@@ -710,3 +533,4 @@ print(
 
 
 server.serve_forever()
+```
