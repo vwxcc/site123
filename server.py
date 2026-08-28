@@ -1,4 +1,3 @@
-```python
 import os
 import json
 import httpx
@@ -711,4 +710,3 @@ print(
 
 
 server.serve_forever()
-```
