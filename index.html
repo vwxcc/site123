@@ -63,6 +63,15 @@
             cursor: pointer;
             transition: 0.15s;
         }
+        #modelSelect {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f1f1f;
+    outline: none;
+    cursor: pointer;
+        }
 
         .new-chat:hover {
             background: #f2f2f2;
@@ -342,7 +351,11 @@
                 </button>
 
                 <div class="chat-title">
-                    ИИ
+    <select id="modelSelect">
+        <option value="gpt">GPT-5.4 Mini</option>
+        <option value="gemini">Gemini 3.1 Pro Preview</option>
+    </select>
+</div>
                 </div>
             </div>
 
@@ -389,7 +402,8 @@
     const welcome = document.getElementById("welcome");
     const history = document.getElementById("history");
 
-    async function sendMessage() {
+    ```javascript
+async function sendMessage() {
     const text = input.value.trim();
 
     if (!text) return;
@@ -404,6 +418,7 @@
     const historyData = [];
 
     document.querySelectorAll(".message").forEach(message => {
+
         const span = message.querySelector("span");
 
         if (!span) return;
@@ -412,40 +427,205 @@
             role: message.classList.contains("user")
                 ? "user"
                 : "assistant",
+
             content: span.textContent
         });
     });
 
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: text,
-                history: historyData.slice(0, -1)
-            })
-        });
+    const selectedModel =
+        document.getElementById("modelSelect").value;
 
-        const data = await response.json();
+    // Создаём сообщение ИИ
+    const message = document.createElement("div");
+    message.className = "message ai";
+
+    const bubble = document.createElement("span");
+
+    const loading = document.createElement("div");
+    loading.className = "ai-loading";
+
+    const loadingText = document.createElement("span");
+    loadingText.className = "loading-text";
+    loadingText.textContent = "Рассуждение";
+
+    const dots = document.createElement("span");
+    dots.className = "loading-dots";
+    dots.textContent = "•••";
+
+    loading.appendChild(loadingText);
+    loading.appendChild(dots);
+
+    bubble.appendChild(loading);
+    message.appendChild(bubble);
+    messages.appendChild(message);
+
+    const chat = document.getElementById("chat");
+
+    chat.scrollTop = chat.scrollHeight;
+
+    // Фразы для ожидания первого токена
+    const statuses = [
+        "Рассуждение",
+        "Анализирую",
+        "Думаю",
+        "Формирую ответ",
+        "Проверяю",
+        "Готовлю ответ"
+    ];
+
+    let statusIndex = 0;
+
+    const statusTimer = setInterval(() => {
+
+        statusIndex =
+            (statusIndex + 1) % statuses.length;
+
+        loadingText.textContent =
+            statuses[statusIndex];
+
+    }, 2000);
+
+    try {
+
+        const response = await fetch(
+            "/api/chat",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    message: text,
+                    history: historyData.slice(0, -1),
+                    model: selectedModel
+                })
+            }
+        );
 
         if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
             throw new Error(
-                data.error || "Ошибка запроса"
+                errorText ||
+                "Ошибка сервера"
             );
         }
 
-        addMessage(data.answer, "ai");
+        if (!response.body) {
+            throw new Error(
+                "Streaming не поддерживается браузером"
+            );
+        }
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder("utf-8");
+
+        let buffer = "";
+        let fullAnswer = "";
+        let firstToken = true;
+
+        while (true) {
+
+            const {
+                value,
+                done
+            } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+            const lines =
+                buffer.split("\n");
+
+            buffer =
+                lines.pop() || "";
+
+            for (const line of lines) {
+
+                if (!line.startsWith("data: ")) {
+                    continue;
+                }
+
+                const data =
+                    line.substring(6).trim();
+
+                if (data === "[DONE]") {
+                    continue;
+                }
+
+                try {
+
+                    const event =
+                        JSON.parse(data);
+
+                    if (
+                        event.type === "text" &&
+                        event.text
+                    ) {
+
+                        if (firstToken) {
+
+                            firstToken = false;
+
+                            clearInterval(
+                                statusTimer
+                            );
+
+                            loading.remove();
+
+                            bubble.textContent = "";
+                        }
+
+                        fullAnswer += event.text;
+
+                        bubble.textContent =
+                            fullAnswer;
+
+                        chat.scrollTop =
+                            chat.scrollHeight;
+                    }
+
+                } catch (e) {
+                    // Игнорируем отдельные
+                    // некорректные SSE-пакеты
+                }
+            }
+        }
+
+        clearInterval(statusTimer);
+
+        if (!fullAnswer) {
+
+            bubble.textContent =
+                "ИИ не вернул текстовый ответ.";
+        }
+
         addHistory(text);
 
     } catch (error) {
-        console.error(error);
 
-        addMessage(
-            "Ошибка при обращении к ИИ: " + error.message,
-            "ai"
-        );
+        clearInterval(statusTimer);
+
+        loading.remove();
+
+        bubble.textContent =
+            "Ошибка: " + error.message;
+
+        console.error(error);
     }
 }
 
