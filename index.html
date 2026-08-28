@@ -5,7 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ИИ</title>
+    .ai-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #777;
+}
 
+.loading-dots {
+    display: inline-block;
+    animation: loadingDots 1.2s infinite;
+}
+
+@keyframes loadingDots {
+    0% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.25;
+    }
+}
     <style>
         * {
             box-sizing: border-box;
