@@ -24,6 +24,11 @@ SYSTEM_PROMPT = """
 Если не уверен в информации, прямо сообщи об этом.
 """
 
+API_KEYS = {
+    "gpt": os.environ.get("GPTMINI_KEY"),
+    "gemini": os.environ.get("PROPREW_KEY"),
+    "nano": os.environ.get("NANOB_KEY")
+}
 
 class Handler(BaseHTTPRequestHandler):
 
