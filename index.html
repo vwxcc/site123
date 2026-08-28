@@ -389,25 +389,65 @@
     const welcome = document.getElementById("welcome");
     const history = document.getElementById("history");
 
-    function sendMessage() {
-        const text = input.value.trim();
+    async function sendMessage() {
+    const text = input.value.trim();
 
-        if (!text) return;
+    if (!text) return;
 
-        welcome.style.display = "none";
+    welcome.style.display = "none";
 
-        addMessage(text, "user");
+    addMessage(text, "user");
 
-        input.value = "";
-        input.style.height = "42px";
+    input.value = "";
+    input.style.height = "42px";
 
-        // Имитация ответа ИИ
-        setTimeout(() => {
-            addMessage("Это пока тестовый ответ. Позже здесь будет подключена настоящая нейросеть.", "ai");
-        }, 500);
+    const historyData = [];
 
+    document.querySelectorAll(".message").forEach(message => {
+        const span = message.querySelector("span");
+
+        if (!span) return;
+
+        historyData.push({
+            role: message.classList.contains("user")
+                ? "user"
+                : "assistant",
+            content: span.textContent
+        });
+    });
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: text,
+                history: historyData.slice(0, -1)
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Ошибка запроса"
+            );
+        }
+
+        addMessage(data.answer, "ai");
         addHistory(text);
+
+    } catch (error) {
+        console.error(error);
+
+        addMessage(
+            "Ошибка при обращении к ИИ: " + error.message,
+            "ai"
+        );
     }
+}
 
     function addMessage(text, type) {
         const message = document.createElement("div");
