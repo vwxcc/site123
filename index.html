@@ -19,13 +19,22 @@
             width: 100%;
             height: 100%;
             font-family: Arial, sans-serif;
-            background: #ffffff;
-            color: #1f1f1f;
+            background: #fff;
+            color: #202020;
         }
 
         body {
             overflow: hidden;
         }
+
+        button,
+        textarea {
+            font-family: inherit;
+        }
+
+        /* =========================
+           APP
+           ========================= */
 
         .app {
             display: flex;
@@ -40,68 +49,97 @@
         .sidebar {
             width: 260px;
             height: 100%;
-            border-right: 1px solid #e8e8e8;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             padding: 18px 14px;
-            background: #ffffff;
+            border-right: 1px solid #ededed;
+            background: #fff;
         }
 
         .logo {
+            padding: 5px 10px 20px;
             font-size: 21px;
             font-weight: 700;
-            padding: 4px 10px 20px;
         }
 
         .new-chat {
             width: 100%;
-            border: 1px solid #dedede;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 11px 13px;
-            text-align: left;
+            padding: 11px 14px;
+            border: 1px solid #e1e1e1;
+            border-radius: 12px;
+            background: #fff;
+            color: #222;
             font-size: 14px;
+            text-align: left;
             cursor: pointer;
+            transition: background .15s, box-shadow .15s, border-color .15s;
         }
 
         .new-chat:hover {
-            background: #f6f6f6;
+            background: #fafafa;
+            border-color: #d5d5d5;
+            box-shadow: 0 2px 9px rgba(0, 0, 0, .05);
         }
 
         .history-title {
             margin: 25px 10px 9px;
             font-size: 12px;
-            color: #888;
+            color: #8b8b8b;
         }
 
         .history {
             flex: 1;
             overflow-y: auto;
+            min-height: 0;
+        }
+
+        .history-empty {
+            padding: 10px;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .history-item {
+            display: block;
+            width: 100%;
+            margin-bottom: 3px;
             padding: 10px;
-            border-radius: 8px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #333;
             font-size: 14px;
+            text-align: left;
             cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background .15s, box-shadow .15s;
         }
 
         .history-item:hover {
-            background: #f5f5f5;
+            background: #f7f7f7;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
         }
 
         .account {
+            width: 100%;
+            padding: 11px 10px;
             border: none;
+            border-radius: 10px;
             background: transparent;
-            text-align: left;
-            padding: 12px 10px;
+            color: #333;
             font-size: 14px;
+            text-align: left;
             cursor: pointer;
-            border-radius: 8px;
+            transition: background .15s, box-shadow .15s;
         }
 
         .account:hover {
-            background: #f5f5f5;
+            background: #f7f7f7;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
         }
 
         /* =========================
@@ -109,29 +147,118 @@
            ========================= */
 
         .main {
+            position: relative;
             flex: 1;
+            min-width: 0;
             height: 100%;
             display: flex;
             flex-direction: column;
-            min-width: 0;
+            background: #fff;
         }
 
+        /* =========================
+           TOPBAR
+           ========================= */
+
         .topbar {
+            position: relative;
+            z-index: 20;
             height: 60px;
-            border-bottom: 1px solid #eeeeee;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             padding: 0 22px;
+            border-bottom: 1px solid #eeeeee;
+            background: #fff;
         }
 
-        .model-select {
+        .model-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 11px;
             border: none;
+            border-radius: 10px;
             background: transparent;
-            font-size: 16px;
+            color: #202020;
+            font-size: 15px;
             font-weight: 600;
-            color: #1f1f1f;
-            outline: none;
             cursor: pointer;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .model-button:hover {
+            background: #f6f6f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+        }
+
+        .model-arrow {
+            font-size: 12px;
+            color: #777;
+            transition: transform .15s;
+        }
+
+        .model-button.open .model-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* =========================
+           MODEL MENU
+           ========================= */
+
+        .model-menu {
+            position: absolute;
+            top: 51px;
+            left: 22px;
+            width: 270px;
+            padding: 6px;
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, .10);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-5px) scale(.98);
+            transform-origin: top left;
+            transition: opacity .14s, transform .14s, visibility .14s;
+        }
+
+        .model-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .model-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 11px 12px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #222;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .model-option:hover {
+            background: #f5f5f5;
+        }
+
+        .model-option.selected {
+            background: #f3f3f3;
+        }
+
+        .check {
+            width: 18px;
+            color: #222;
+            font-size: 14px;
+            text-align: center;
         }
 
         /* =========================
@@ -140,8 +267,9 @@
 
         .chat {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 35px 20px 150px;
+            padding: 30px 20px 155px;
         }
 
         .messages {
@@ -154,12 +282,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
             font-size: 28px;
             font-weight: 600;
+            text-align: center;
         }
 
         .message {
             display: flex;
+            width: 100%;
             margin-bottom: 24px;
             line-height: 1.55;
             font-size: 15px;
@@ -169,21 +300,23 @@
             justify-content: flex-end;
         }
 
-        .message.user span {
+        .message.user .message-content {
             max-width: 75%;
-            background: #f1f1f1;
-            border-radius: 18px;
             padding: 10px 15px;
+            border-radius: 18px;
+            background: #f1f1f1;
             white-space: pre-wrap;
+            overflow-wrap: anywhere;
         }
 
         .message.ai {
             justify-content: flex-start;
         }
 
-        .message.ai span {
-            max-width: 85%;
+        .message.ai .message-content {
+            max-width: 90%;
             white-space: pre-wrap;
+            overflow-wrap: anywhere;
         }
 
         /* =========================
@@ -193,12 +326,13 @@
         .ai-loading {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 8px;
             color: #777;
         }
 
         .loading-dots {
             display: inline-flex;
+            align-items: center;
             gap: 3px;
         }
 
@@ -211,18 +345,18 @@
         }
 
         .loading-dots span:nth-child(2) {
-            animation-delay: 0.15s;
+            animation-delay: .15s;
         }
 
         .loading-dots span:nth-child(3) {
-            animation-delay: 0.3s;
+            animation-delay: .3s;
         }
 
         @keyframes loadingDot {
             0%,
             60%,
             100% {
-                opacity: 0.25;
+                opacity: .25;
                 transform: translateY(0);
             }
 
@@ -237,63 +371,88 @@
            ========================= */
 
         .input-area {
-            position: fixed;
-            bottom: 0;
-            left: 260px;
+            position: absolute;
+            z-index: 10;
             right: 0;
+            bottom: 0;
+            left: 0;
             padding: 18px 20px 24px;
             background: linear-gradient(
                 to top,
-                #ffffff 75%,
+                #fff 72%,
                 rgba(255, 255, 255, 0)
             );
         }
 
         .input-box {
             width: min(850px, 100%);
+            min-height: 58px;
             margin: 0 auto;
             display: flex;
             align-items: flex-end;
-            gap: 10px;
-            border: 1px solid #d9d9d9;
-            border-radius: 18px;
-            background: #ffffff;
+            gap: 9px;
             padding: 8px 8px 8px 14px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #dcdcdc;
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, .05);
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .input-box:focus-within {
+            border-color: #cfcfcf;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .07);
         }
 
         #input {
             flex: 1;
-            border: none;
-            outline: none;
-            resize: none;
+            width: 100%;
             min-height: 40px;
             max-height: 160px;
             padding: 9px 2px;
-            font-family: Arial, sans-serif;
+            border: none;
+            outline: none;
+            resize: none;
+            background: transparent;
+            color: #202020;
             font-size: 15px;
             line-height: 1.4;
-            background: transparent;
+        }
+
+        #input::placeholder {
+            color: #999;
         }
 
         #send {
             width: 40px;
             height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
             border: none;
             border-radius: 50%;
-            background: #1f1f1f;
-            color: #ffffff;
+            background: #202020;
+            color: #fff;
+            font-size: 19px;
+            line-height: 1;
             cursor: pointer;
-            font-size: 18px;
-            flex-shrink: 0;
+            transition: opacity .15s, transform .15s, box-shadow .15s;
         }
 
-        #send:hover {
-            opacity: 0.85;
+        #send:hover:not(:disabled) {
+            opacity: .88;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .12);
+        }
+
+        #send:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         #send:disabled {
-            opacity: 0.35;
+            opacity: .4;
             cursor: default;
         }
 
@@ -309,11 +468,22 @@
 
             .topbar {
                 height: 56px;
-                padding: 0 14px;
+                padding: 0 10px;
+            }
+
+            .model-button {
+                padding: 8px 10px;
+            }
+
+            .model-menu {
+                top: 49px;
+                left: 10px;
+                right: 10px;
+                width: auto;
             }
 
             .chat {
-                padding: 25px 14px 135px;
+                padding: 25px 13px 140px;
             }
 
             .welcome {
@@ -321,21 +491,21 @@
                 font-size: 24px;
             }
 
-            .message.user span {
+            .message.user .message-content {
                 max-width: 88%;
             }
 
-            .message.ai span {
-                max-width: 94%;
+            .message.ai .message-content {
+                max-width: 95%;
             }
 
             .input-area {
-                left: 0;
-                padding: 12px 10px 16px;
+                padding: 11px 10px 16px;
             }
 
             .input-box {
-                border-radius: 16px;
+                min-height: 56px;
+                border-radius: 17px;
             }
         }
     </style>
@@ -344,8 +514,6 @@
 <body>
 
 <div class="app">
-
-    <!-- SIDEBAR -->
 
     <aside class="sidebar">
 
@@ -368,36 +536,84 @@
             class="history"
             id="history"
         >
-            <div class="history-item">
-                Новый чат
-            </div>
         </div>
 
-        <button class="account">
+        <button
+            class="account"
+            id="accountButton"
+        >
             👤 Аккаунт
         </button>
 
     </aside>
 
 
-    <!-- MAIN -->
-
     <main class="main">
 
         <header class="topbar">
 
-            <select
-                class="model-select"
-                id="modelSelect"
+            <button
+                class="model-button"
+                id="modelButton"
             >
-                <option value="gpt">
+                <span id="selectedModel">
                     GPT-5.4 Mini
-                </option>
+                </span>
 
-                <option value="gemini">
-                    Gemini 3.1 Pro Preview
-                </option>
-            </select>
+                <span class="model-arrow">
+                    ▾
+                </span>
+            </button>
+
+
+            <div
+                class="model-menu"
+                id="modelMenu"
+            >
+
+                <button
+                    class="model-option selected"
+                    data-model="gpt"
+                    data-name="GPT-5.4 Mini"
+                >
+                    <span>
+                        GPT-5.4 Mini
+                    </span>
+
+                    <span class="check">
+                        ✓
+                    </span>
+                </button>
+
+
+                <button
+                    class="model-option"
+                    data-model="gemini"
+                    data-name="Gemini 3.1 Pro Preview"
+                >
+                    <span>
+                        Gemini 3.1 Pro Preview
+                    </span>
+
+                    <span class="check">
+                    </span>
+                </button>
+
+
+                <button
+                    class="model-option"
+                    data-model="qwen"
+                    data-name="Qwen 3.5 Plus"
+                >
+                    <span>
+                        Qwen 3.5 Plus
+                    </span>
+
+                    <span class="check">
+                    </span>
+                </button>
+
+            </div>
 
         </header>
 
@@ -424,21 +640,20 @@
         </section>
 
 
-        <!-- INPUT -->
-
         <div class="input-area">
 
             <div class="input-box">
 
                 <textarea
                     id="input"
-                    placeholder="Напишите сообщение..."
                     rows="1"
+                    placeholder="Напишите сообщение..."
                 ></textarea>
 
                 <button
                     id="send"
                     title="Отправить"
+                    aria-label="Отправить"
                 >
                     ↑
                 </button>
@@ -453,6 +668,10 @@
 
 
 <script>
+
+    /* =========================
+       ELEMENTS
+       ========================= */
 
     const input =
         document.getElementById("input");
@@ -469,23 +688,221 @@
     const chat =
         document.getElementById("chat");
 
-    const modelSelect =
-        document.getElementById("modelSelect");
-
     const newChat =
         document.getElementById("newChat");
 
+    const historyElement =
+        document.getElementById("history");
+
+    const modelButton =
+        document.getElementById("modelButton");
+
+    const modelMenu =
+        document.getElementById("modelMenu");
+
+    const selectedModel =
+        document.getElementById("selectedModel");
+
+    const modelOptions =
+        document.querySelectorAll(
+            ".model-option"
+        );
+
+
+    /* =========================
+       STATE
+       ========================= */
 
     let conversationHistory = [];
 
     let isGenerating = false;
+
+    let selectedModelKey = "gpt";
+
+    let currentChatTitle = "Новый чат";
+
+
+    /* =========================
+       LOCAL STORAGE
+       ========================= */
+
+    function saveHistory() {
+
+        try {
+
+            localStorage.setItem(
+                "ai_conversation_history",
+                JSON.stringify(
+                    conversationHistory
+                )
+            );
+
+        } catch (error) {
+
+            console.log(
+                "Не удалось сохранить историю",
+                error
+            );
+        }
+    }
+
+
+    function loadHistory() {
+
+        try {
+
+            const saved =
+                localStorage.getItem(
+                    "ai_conversation_history"
+                );
+
+
+            if (!saved) {
+
+                renderHistory();
+
+                return;
+            }
+
+
+            const parsed =
+                JSON.parse(saved);
+
+
+            if (
+                Array.isArray(parsed)
+            ) {
+
+                conversationHistory =
+                    parsed;
+            }
+
+
+        } catch (error) {
+
+            conversationHistory =
+                [];
+        }
+
+
+        renderHistory();
+    }
+
+
+    /* =========================
+       HISTORY SIDEBAR
+       ========================= */
+
+    function renderHistory() {
+
+        historyElement.innerHTML =
+            "";
+
+
+        if (
+            conversationHistory.length === 0
+        ) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "history-empty";
+
+            empty.textContent =
+                "История пока пуста";
+
+            historyElement.appendChild(
+                empty
+            );
+
+            return;
+        }
+
+
+        /*
+         * Показываем названия чатов.
+         * Пока каждый новый чат хранится
+         * как отдельная запись.
+         */
+
+        const item =
+            document.createElement("button");
+
+        item.className =
+            "history-item";
+
+        item.textContent =
+            currentChatTitle;
+
+
+        item.addEventListener(
+            "click",
+            () => {
+
+                restoreCurrentChat();
+
+            }
+        );
+
+
+        historyElement.appendChild(
+            item
+        );
+    }
+
+
+    function restoreCurrentChat() {
+
+        messages.innerHTML =
+            "";
+
+
+        if (
+            conversationHistory.length === 0
+        ) {
+
+            showWelcome();
+
+            return;
+        }
+
+
+        conversationHistory.forEach(
+            message => {
+
+                if (
+                    message.role === "user"
+                ) {
+
+                    addMessageElement(
+                        message.content,
+                        "user"
+                    );
+
+                } else if (
+                    message.role === "assistant"
+                ) {
+
+                    addMessageElement(
+                        message.content,
+                        "ai"
+                    );
+                }
+
+            }
+        );
+
+
+        scrollToBottom();
+    }
 
 
     /* =========================
        ADD MESSAGE
        ========================= */
 
-    function addMessage(
+    function addMessageElement(
         text,
         role
     ) {
@@ -497,27 +914,165 @@
             "message " + role;
 
 
-        const span =
-            document.createElement("span");
+        const content =
+            document.createElement("div");
 
-        span.textContent =
+        content.className =
+            "message-content";
+
+        content.textContent =
             text;
 
 
-        message.appendChild(span);
+        message.appendChild(
+            content
+        );
 
-        messages.appendChild(message);
+        messages.appendChild(
+            message
+        );
 
-        chat.scrollTop =
-            chat.scrollHeight;
+
+        return content;
+    }
 
 
-        return span;
+    function showWelcome() {
+
+        messages.innerHTML =
+            `
+            <div
+                class="welcome"
+                id="welcome"
+            >
+                Чем могу помочь?
+            </div>
+            `;
+    }
+
+
+    function scrollToBottom() {
+
+        requestAnimationFrame(
+            () => {
+
+                chat.scrollTop =
+                    chat.scrollHeight;
+
+            }
+        );
     }
 
 
     /* =========================
-       SEND
+       MODEL MENU
+       ========================= */
+
+    modelButton.addEventListener(
+        "click",
+        function(event) {
+
+            event.stopPropagation();
+
+            const isOpen =
+                modelMenu.classList.contains(
+                    "open"
+                );
+
+
+            if (isOpen) {
+
+                closeModelMenu();
+
+            } else {
+
+                modelMenu.classList.add(
+                    "open"
+                );
+
+                modelButton.classList.add(
+                    "open"
+                );
+            }
+        }
+    );
+
+
+    modelOptions.forEach(
+        option => {
+
+            option.addEventListener(
+                "click",
+                function(event) {
+
+                    event.stopPropagation();
+
+
+                    selectedModelKey =
+                        this.dataset.model;
+
+
+                    selectedModel.textContent =
+                        this.dataset.name;
+
+
+                    modelOptions.forEach(
+                        item => {
+
+                            item.classList.remove(
+                                "selected"
+                            );
+
+                            item.querySelector(
+                                ".check"
+                            ).textContent =
+                                "";
+                        }
+                    );
+
+
+                    this.classList.add(
+                        "selected"
+                    );
+
+
+                    this.querySelector(
+                        ".check"
+                    ).textContent =
+                        "✓";
+
+
+                    closeModelMenu();
+                }
+            );
+        }
+    );
+
+
+    function closeModelMenu() {
+
+        modelMenu.classList.remove(
+            "open"
+        );
+
+        modelButton.classList.remove(
+            "open"
+        );
+    }
+
+
+    document.addEventListener(
+        "click",
+        function() {
+
+            closeModelMenu();
+
+        }
+    );
+
+
+    /* =========================
+       SEND MESSAGE
        ========================= */
 
     async function sendMessage() {
@@ -526,58 +1081,75 @@
             input.value.trim();
 
 
-        if (!text || isGenerating) {
+        if (
+            !text ||
+            isGenerating
+        ) {
+
             return;
         }
 
 
-        isGenerating = true;
+        isGenerating =
+            true;
 
-        send.disabled = true;
+        send.disabled =
+            true;
 
 
         if (welcome) {
+
             welcome.style.display =
                 "none";
         }
 
 
-        addMessage(
+        addMessageElement(
             text,
             "user"
         );
 
 
-        input.value = "";
+        if (
+            currentChatTitle ===
+            "Новый чат"
+        ) {
 
-        input.style.height =
-            "40px";
+            currentChatTitle =
+                text.length > 35
+                    ? text.substring(0, 35) + "..."
+                    : text;
+        }
 
-
-        /* История для сервера */
 
         const historyForServer =
             conversationHistory.slice(-20);
+
+
+        input.value =
+            "";
+
+        input.style.height =
+            "40px";
 
 
         /* =====================
            AI MESSAGE
            ===================== */
 
-        const aiMessage =
+        const message =
             document.createElement("div");
 
-        aiMessage.className =
+        message.className =
             "message ai";
 
 
-        const aiSpan =
-            document.createElement("span");
+        const content =
+            document.createElement("div");
 
+        content.className =
+            "message-content";
 
-        /* =====================
-           LOADING
-           ===================== */
 
         const loading =
             document.createElement("div");
@@ -609,7 +1181,9 @@
             const dot =
                 document.createElement("span");
 
-            dots.appendChild(dot);
+            dots.appendChild(
+                dot
+            );
         }
 
 
@@ -621,26 +1195,24 @@
             dots
         );
 
-
-        aiSpan.appendChild(
+        content.appendChild(
             loading
         );
 
-        aiMessage.appendChild(
-            aiSpan
+        message.appendChild(
+            content
         );
 
         messages.appendChild(
-            aiMessage
+            message
         );
 
 
-        chat.scrollTop =
-            chat.scrollHeight;
+        scrollToBottom();
 
 
         /* =====================
-           STATUS TEXT
+           LOADING WORDS
            ===================== */
 
         const statuses = [
@@ -677,6 +1249,13 @@
             );
 
 
+        let fullAnswer =
+            "";
+
+        let gotFirstToken =
+            false;
+
+
         try {
 
             const response =
@@ -692,13 +1271,16 @@
 
                         body:
                             JSON.stringify({
-                                message: text,
+
+                                message:
+                                    text,
 
                                 history:
                                     historyForServer,
 
                                 model:
-                                    modelSelect.value
+                                    selectedModelKey
+
                             })
                     }
                 );
@@ -706,12 +1288,38 @@
 
             if (!response.ok) {
 
-                const error =
-                    await response.text();
+                let errorMessage =
+                    "Ошибка сервера";
+
+
+                try {
+
+                    const errorData =
+                        await response.json();
+
+
+                    if (
+                        errorData.error
+                    ) {
+
+                        errorMessage =
+                            errorData.error;
+                    }
+
+                } catch (error) {
+
+                    const raw =
+                        await response.text();
+
+                    if (raw) {
+                        errorMessage =
+                            raw;
+                    }
+                }
+
 
                 throw new Error(
-                    error ||
-                    "Ошибка сервера"
+                    errorMessage
                 );
             }
 
@@ -719,7 +1327,7 @@
             if (!response.body) {
 
                 throw new Error(
-                    "Streaming не поддерживается"
+                    "Сервер не поддерживает streaming"
                 );
             }
 
@@ -734,16 +1342,9 @@
                 );
 
 
-            let buffer = "";
+            let buffer =
+                "";
 
-            let fullAnswer = "";
-
-            let firstToken = true;
-
-
-            /* =====================
-               STREAM
-               ===================== */
 
             while (true) {
 
@@ -752,6 +1353,7 @@
 
 
                 if (result.done) {
+
                     break;
                 }
 
@@ -782,6 +1384,7 @@
                             "data: "
                         )
                     ) {
+
                         continue;
                     }
 
@@ -796,6 +1399,7 @@
                         data ===
                         "[DONE]"
                     ) {
+
                         continue;
                     }
 
@@ -809,17 +1413,27 @@
 
 
                         if (
+                            event.error
+                        ) {
+
+                            throw new Error(
+                                event.error
+                            );
+                        }
+
+
+                        if (
                             event.type ===
                                 "text" &&
                             event.text
                         ) {
 
                             if (
-                                firstToken
+                                !gotFirstToken
                             ) {
 
-                                firstToken =
-                                    false;
+                                gotFirstToken =
+                                    true;
 
 
                                 clearInterval(
@@ -830,7 +1444,7 @@
                                 loading.remove();
 
 
-                                aiSpan.textContent =
+                                content.textContent =
                                     "";
                             }
 
@@ -839,21 +1453,24 @@
                                 event.text;
 
 
-                            aiSpan.textContent =
+                            content.textContent =
                                 fullAnswer;
 
 
-                            chat.scrollTop =
-                                chat.scrollHeight;
+                            scrollToBottom();
                         }
-
 
                     } catch (error) {
 
-                        console.log(
-                            "SSE:",
-                            data
-                        );
+                        if (
+                            error.message &&
+                            !error.message.includes(
+                                "Unexpected token"
+                            )
+                        ) {
+
+                            throw error;
+                        }
                     }
                 }
             }
@@ -866,24 +1483,37 @@
 
             if (!fullAnswer) {
 
-                aiSpan.textContent =
+                loading.remove();
+
+                content.textContent =
                     "ИИ не вернул ответ.";
             }
 
 
-            /* Сохраняем историю */
+            /* =====================
+               SAVE HISTORY
+               ===================== */
 
-            conversationHistory.push({
-                role: "user",
-                content: text
-            });
+            conversationHistory.push(
+                {
+                    role: "user",
+                    content: text
+                }
+            );
 
 
-            conversationHistory.push({
-                role: "assistant",
-                content:
-                    fullAnswer
-            });
+            conversationHistory.push(
+                {
+                    role: "assistant",
+                    content:
+                        fullAnswer
+                }
+            );
+
+
+            saveHistory();
+
+            renderHistory();
 
 
         } catch (error) {
@@ -896,16 +1526,22 @@
             loading.remove();
 
 
-            aiSpan.textContent =
+            content.textContent =
                 "Ошибка: " +
                 error.message;
 
 
             console.error(
+                "Chat error:",
                 error
             );
 
         } finally {
+
+            /*
+             * Кнопка ВСЕГДА снова активируется,
+             * даже если произошла ошибка.
+             */
 
             isGenerating =
                 false;
@@ -914,12 +1550,14 @@
                 false;
 
             input.focus();
+
+            scrollToBottom();
         }
     }
 
 
     /* =========================
-       BUTTON
+       SEND BUTTON
        ========================= */
 
     send.addEventListener(
@@ -950,7 +1588,7 @@
 
 
     /* =========================
-       TEXTAREA SIZE
+       TEXTAREA AUTO SIZE
        ========================= */
 
     input.addEventListener(
@@ -959,6 +1597,7 @@
 
             this.style.height =
                 "40px";
+
 
             this.style.height =
                 Math.min(
@@ -980,24 +1619,36 @@
             conversationHistory =
                 [];
 
-            messages.innerHTML =
-                `
-                <div
-                    class="welcome"
-                    id="welcome"
-                >
-                    Чем могу помочь?
-                </div>
-                `;
+            currentChatTitle =
+                "Новый чат";
 
-            input.value = "";
+
+            saveHistory();
+
+            renderHistory();
+
+            showWelcome();
+
+
+            input.value =
+                "";
 
             input.style.height =
                 "40px";
 
+
             input.focus();
         }
     );
+
+
+    /* =========================
+       INITIALIZE
+       ========================= */
+
+    loadHistory();
+
+    input.focus();
 
 </script>
 
