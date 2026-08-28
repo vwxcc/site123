@@ -4,38 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ИИ</title>
-    .ai-loading {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    color: #777;
-}
 
-.loading-dots {
-    display: inline-block;
-    animation: loadingDots 1.2s infinite;
-}
-
-@keyframes loadingDots {
-    0% {
-        opacity: 0.25;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.25;
-    }
-}
     <style>
         * {
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -55,7 +33,9 @@
             height: 100vh;
         }
 
-        /* Боковая панель */
+        /* =========================
+           SIDEBAR
+           ========================= */
 
         .sidebar {
             width: 260px;
@@ -63,271 +43,299 @@
             border-right: 1px solid #e8e8e8;
             display: flex;
             flex-direction: column;
-            background: #fafafa;
-            flex-shrink: 0;
+            padding: 18px 14px;
+            background: #ffffff;
         }
 
         .logo {
-            height: 64px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
             font-size: 21px;
             font-weight: 700;
-            border-bottom: 1px solid #eeeeee;
+            padding: 4px 10px 20px;
         }
 
         .new-chat {
-            margin: 16px;
-            padding: 12px;
-            border: 1px solid #dddddd;
+            width: 100%;
+            border: 1px solid #dedede;
+            background: #ffffff;
             border-radius: 10px;
-            background: white;
+            padding: 11px 13px;
+            text-align: left;
             font-size: 14px;
             cursor: pointer;
-            transition: 0.15s;
-        }
-        #modelSelect {
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1f1f1f;
-    outline: none;
-    cursor: pointer;
         }
 
         .new-chat:hover {
-            background: #f2f2f2;
+            background: #f6f6f6;
         }
 
         .history-title {
-            padding: 8px 16px;
-            color: #777;
+            margin: 25px 10px 9px;
             font-size: 12px;
-            text-transform: uppercase;
+            color: #888;
         }
 
         .history {
             flex: 1;
             overflow-y: auto;
-            padding: 0 10px;
         }
 
         .history-item {
-            padding: 11px 12px;
+            padding: 10px;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            cursor: pointer;
         }
 
         .history-item:hover {
-            background: #eeeeee;
+            background: #f5f5f5;
         }
 
         .account {
-            margin: 12px;
-            padding: 12px;
             border: none;
-            border-radius: 10px;
             background: transparent;
             text-align: left;
+            padding: 12px 10px;
             font-size: 14px;
             cursor: pointer;
+            border-radius: 8px;
         }
 
         .account:hover {
-            background: #eeeeee;
+            background: #f5f5f5;
         }
 
-        /* Основная область */
+        /* =========================
+           MAIN
+           ========================= */
 
         .main {
             flex: 1;
-            min-width: 0;
             height: 100%;
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .topbar {
-            height: 64px;
+            height: 60px;
             border-bottom: 1px solid #eeeeee;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            flex-shrink: 0;
+            padding: 0 22px;
         }
 
-        .mobile-menu {
-            display: none;
+        .model-select {
             border: none;
             background: transparent;
-            font-size: 22px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f1f1f;
+            outline: none;
             cursor: pointer;
         }
 
-        .chat-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
+        /* =========================
+           CHAT
+           ========================= */
 
         .chat {
             flex: 1;
             overflow-y: auto;
-            padding: 30px 20px;
-        }
-
-        .welcome {
-            max-width: 700px;
-            margin: 100px auto 0;
-            text-align: center;
-        }
-
-        .welcome h1 {
-            margin: 0 0 12px;
-            font-size: 34px;
-        }
-
-        .welcome p {
-            margin: 0;
-            color: #777;
-            font-size: 16px;
+            padding: 35px 20px 150px;
         }
 
         .messages {
-            max-width: 800px;
+            width: min(850px, 100%);
             margin: 0 auto;
         }
 
+        .welcome {
+            min-height: 55vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
         .message {
-            margin-bottom: 20px;
-            line-height: 1.5;
+            display: flex;
+            margin-bottom: 24px;
+            line-height: 1.55;
             font-size: 15px;
         }
 
         .message.user {
-            text-align: right;
+            justify-content: flex-end;
         }
 
-        .message span {
-            display: inline-block;
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 12px;
+        .message.user span {
+            max-width: 75%;
             background: #f1f1f1;
-            text-align: left;
+            border-radius: 18px;
+            padding: 10px 15px;
+            white-space: pre-wrap;
         }
 
-        /* Поле ввода */
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message.ai span {
+            max-width: 85%;
+            white-space: pre-wrap;
+        }
+
+        /* =========================
+           LOADING
+           ========================= */
+
+        .ai-loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #777;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .loading-dots span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #777;
+            animation: loadingDot 1.2s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes loadingDot {
+            0%,
+            60%,
+            100% {
+                opacity: 0.25;
+                transform: translateY(0);
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateY(-2px);
+            }
+        }
+
+        /* =========================
+           INPUT
+           ========================= */
 
         .input-area {
-            padding: 16px 20px 20px;
-            background: white;
+            position: fixed;
+            bottom: 0;
+            left: 260px;
+            right: 0;
+            padding: 18px 20px 24px;
+            background: linear-gradient(
+                to top,
+                #ffffff 75%,
+                rgba(255, 255, 255, 0)
+            );
         }
 
         .input-box {
-            max-width: 800px;
+            width: min(850px, 100%);
             margin: 0 auto;
             display: flex;
             align-items: flex-end;
             gap: 10px;
-            border: 1px solid #dcdcdc;
-            border-radius: 14px;
-            padding: 8px;
-            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 18px;
+            background: #ffffff;
+            padding: 8px 8px 8px 14px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
 
-        textarea {
+        #input {
             flex: 1;
-            min-width: 0;
-            height: 42px;
-            max-height: 150px;
-            resize: none;
             border: none;
             outline: none;
-            padding: 11px 10px;
-            font-family: inherit;
+            resize: none;
+            min-height: 40px;
+            max-height: 160px;
+            padding: 9px 2px;
+            font-family: Arial, sans-serif;
             font-size: 15px;
+            line-height: 1.4;
             background: transparent;
         }
 
-        .send {
-            width: 42px;
-            height: 42px;
+        #send {
+            width: 40px;
+            height: 40px;
             border: none;
-            border-radius: 10px;
+            border-radius: 50%;
             background: #1f1f1f;
-            color: white;
+            color: #ffffff;
             cursor: pointer;
             font-size: 18px;
             flex-shrink: 0;
         }
 
-        .send:hover {
-            background: #000000;
+        #send:hover {
+            opacity: 0.85;
         }
 
-        .send:active {
-            transform: scale(0.96);
+        #send:disabled {
+            opacity: 0.35;
+            cursor: default;
         }
 
-        /* Телефон */
+        /* =========================
+           MOBILE
+           ========================= */
 
         @media (max-width: 700px) {
+
             .sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                z-index: 10;
-                transition: left 0.2s ease;
-                box-shadow: 5px 0 20px rgba(0, 0, 0, 0.08);
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-
-            .mobile-menu {
-                display: block;
-                margin-right: 12px;
+                display: none;
             }
 
             .topbar {
+                height: 56px;
                 padding: 0 14px;
             }
 
             .chat {
-                padding: 20px 14px;
+                padding: 25px 14px 135px;
             }
 
             .welcome {
-                margin-top: 80px;
+                min-height: 55vh;
+                font-size: 24px;
             }
 
-            .welcome h1 {
-                font-size: 28px;
+            .message.user span {
+                max-width: 88%;
             }
 
-            .welcome p {
-                font-size: 14px;
+            .message.ai span {
+                max-width: 94%;
             }
 
             .input-area {
-                padding: 10px;
+                left: 0;
+                padding: 12px 10px 16px;
             }
 
             .input-box {
-                border-radius: 13px;
-            }
-
-            .message span {
-                max-width: 90%;
+                border-radius: 16px;
             }
         }
     </style>
@@ -337,14 +345,18 @@
 
 <div class="app">
 
-    <!-- История -->
-    <aside class="sidebar" id="sidebar">
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
 
         <div class="logo">
             ИИ
         </div>
 
-        <button class="new-chat" onclick="newChat()">
+        <button
+            class="new-chat"
+            id="newChat"
+        >
             ＋ Новый чат
         </button>
 
@@ -352,51 +364,68 @@
             История
         </div>
 
-        <div class="history" id="history">
+        <div
+            class="history"
+            id="history"
+        >
             <div class="history-item">
                 Новый чат
             </div>
         </div>
 
-        <button class="account" onclick="accountClick()">
+        <button class="account">
             👤 Аккаунт
         </button>
 
     </aside>
 
-    <!-- Основная область -->
+
+    <!-- MAIN -->
+
     <main class="main">
 
         <header class="topbar">
 
-            <div style="display:flex;align-items:center;">
-                <button class="mobile-menu" onclick="toggleSidebar()">
-                    ☰
-                </button>
+            <select
+                class="model-select"
+                id="modelSelect"
+            >
+                <option value="gpt">
+                    GPT-5.4 Mini
+                </option>
 
-                <div class="chat-title">
-    <select id="modelSelect">
-        <option value="gpt">GPT-5.4 Mini</option>
-        <option value="gemini">Gemini 3.1 Pro Preview</option>
-    </select>
-</div>
-                </div>
-            </div>
+                <option value="gemini">
+                    Gemini 3.1 Pro Preview
+                </option>
+            </select>
 
         </header>
 
-        <section class="chat" id="chat">
 
-            <div class="welcome" id="welcome">
-                <h1>Чем могу помочь?</h1>
-                <p>Напишите сообщение ниже</p>
+        <section
+            class="chat"
+            id="chat"
+        >
+
+            <div
+                class="messages"
+                id="messages"
+            >
+
+                <div
+                    class="welcome"
+                    id="welcome"
+                >
+                    Чем могу помочь?
+                </div>
+
             </div>
-
-            <div class="messages" id="messages"></div>
 
         </section>
 
-        <!-- Ввод -->
+
+        <!-- INPUT -->
+
         <div class="input-area">
 
             <div class="input-box">
@@ -405,10 +434,12 @@
                     id="input"
                     placeholder="Напишите сообщение..."
                     rows="1"
-                    onkeydown="handleKey(event)"
                 ></textarea>
 
-                <button class="send" onclick="sendMessage()">
+                <button
+                    id="send"
+                    title="Отправить"
+                >
                     ↑
                 </button>
 
@@ -420,288 +451,554 @@
 
 </div>
 
+
 <script>
-    const input = document.getElementById("input");
-    const messages = document.getElementById("messages");
-    const welcome = document.getElementById("welcome");
-    const history = document.getElementById("history");
 
-    ```javascript
-async function sendMessage() {
-    const text = input.value.trim();
+    const input =
+        document.getElementById("input");
 
-    if (!text) return;
+    const send =
+        document.getElementById("send");
 
-    welcome.style.display = "none";
+    const messages =
+        document.getElementById("messages");
 
-    addMessage(text, "user");
+    const welcome =
+        document.getElementById("welcome");
 
-    input.value = "";
-    input.style.height = "42px";
+    const chat =
+        document.getElementById("chat");
 
-    const historyData = [];
+    const modelSelect =
+        document.getElementById("modelSelect");
 
-    document.querySelectorAll(".message").forEach(message => {
+    const newChat =
+        document.getElementById("newChat");
 
-        const span = message.querySelector("span");
 
-        if (!span) return;
+    let conversationHistory = [];
 
-        historyData.push({
-            role: message.classList.contains("user")
-                ? "user"
-                : "assistant",
+    let isGenerating = false;
 
-            content: span.textContent
-        });
-    });
 
-    const selectedModel =
-        document.getElementById("modelSelect").value;
+    /* =========================
+       ADD MESSAGE
+       ========================= */
 
-    // Создаём сообщение ИИ
-    const message = document.createElement("div");
-    message.className = "message ai";
+    function addMessage(
+        text,
+        role
+    ) {
 
-    const bubble = document.createElement("span");
+        const message =
+            document.createElement("div");
 
-    const loading = document.createElement("div");
-    loading.className = "ai-loading";
+        message.className =
+            "message " + role;
 
-    const loadingText = document.createElement("span");
-    loadingText.className = "loading-text";
-    loadingText.textContent = "Рассуждение";
 
-    const dots = document.createElement("span");
-    dots.className = "loading-dots";
-    dots.textContent = "•••";
+        const span =
+            document.createElement("span");
 
-    loading.appendChild(loadingText);
-    loading.appendChild(dots);
+        span.textContent =
+            text;
 
-    bubble.appendChild(loading);
-    message.appendChild(bubble);
-    messages.appendChild(message);
 
-    const chat = document.getElementById("chat");
+        message.appendChild(span);
 
-    chat.scrollTop = chat.scrollHeight;
-
-    // Фразы для ожидания первого токена
-    const statuses = [
-        "Рассуждение",
-        "Анализирую",
-        "Думаю",
-        "Формирую ответ",
-        "Проверяю",
-        "Готовлю ответ"
-    ];
-
-    let statusIndex = 0;
-
-    const statusTimer = setInterval(() => {
-
-        statusIndex =
-            (statusIndex + 1) % statuses.length;
-
-        loadingText.textContent =
-            statuses[statusIndex];
-
-    }, 2000);
-
-    try {
-
-        const response = await fetch(
-            "/api/chat",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    message: text,
-                    history: historyData.slice(0, -1),
-                    model: selectedModel
-                })
-            }
-        );
-
-        if (!response.ok) {
-
-            const errorText =
-                await response.text();
-
-            throw new Error(
-                errorText ||
-                "Ошибка сервера"
-            );
-        }
-
-        if (!response.body) {
-            throw new Error(
-                "Streaming не поддерживается браузером"
-            );
-        }
-
-        const reader =
-            response.body.getReader();
-
-        const decoder =
-            new TextDecoder("utf-8");
-
-        let buffer = "";
-        let fullAnswer = "";
-        let firstToken = true;
-
-        while (true) {
-
-            const {
-                value,
-                done
-            } = await reader.read();
-
-            if (done) break;
-
-            buffer += decoder.decode(
-                value,
-                {
-                    stream: true
-                }
-            );
-
-            const lines =
-                buffer.split("\n");
-
-            buffer =
-                lines.pop() || "";
-
-            for (const line of lines) {
-
-                if (!line.startsWith("data: ")) {
-                    continue;
-                }
-
-                const data =
-                    line.substring(6).trim();
-
-                if (data === "[DONE]") {
-                    continue;
-                }
-
-                try {
-
-                    const event =
-                        JSON.parse(data);
-
-                    if (
-                        event.type === "text" &&
-                        event.text
-                    ) {
-
-                        if (firstToken) {
-
-                            firstToken = false;
-
-                            clearInterval(
-                                statusTimer
-                            );
-
-                            loading.remove();
-
-                            bubble.textContent = "";
-                        }
-
-                        fullAnswer += event.text;
-
-                        bubble.textContent =
-                            fullAnswer;
-
-                        chat.scrollTop =
-                            chat.scrollHeight;
-                    }
-
-                } catch (e) {
-                    // Игнорируем отдельные
-                    // некорректные SSE-пакеты
-                }
-            }
-        }
-
-        clearInterval(statusTimer);
-
-        if (!fullAnswer) {
-
-            bubble.textContent =
-                "ИИ не вернул текстовый ответ.";
-        }
-
-        addHistory(text);
-
-    } catch (error) {
-
-        clearInterval(statusTimer);
-
-        loading.remove();
-
-        bubble.textContent =
-            "Ошибка: " + error.message;
-
-        console.error(error);
-    }
-}
-
-    function addMessage(text, type) {
-        const message = document.createElement("div");
-        message.className = "message " + type;
-
-        const bubble = document.createElement("span");
-        bubble.textContent = text;
-
-        message.appendChild(bubble);
         messages.appendChild(message);
 
-        const chat = document.getElementById("chat");
-        chat.scrollTop = chat.scrollHeight;
+        chat.scrollTop =
+            chat.scrollHeight;
+
+
+        return span;
     }
 
-    function addHistory(text) {
-        const item = document.createElement("div");
-        item.className = "history-item";
-        item.textContent = text;
 
-        history.prepend(item);
-    }
+    /* =========================
+       SEND
+       ========================= */
 
-    function newChat() {
-        messages.innerHTML = "";
-        welcome.style.display = "block";
+    async function sendMessage() {
+
+        const text =
+            input.value.trim();
+
+
+        if (!text || isGenerating) {
+            return;
+        }
+
+
+        isGenerating = true;
+
+        send.disabled = true;
+
+
+        if (welcome) {
+            welcome.style.display =
+                "none";
+        }
+
+
+        addMessage(
+            text,
+            "user"
+        );
+
+
         input.value = "";
-        input.focus();
-    }
 
-    function accountClick() {
-        alert("Раздел аккаунта пока находится в разработке.");
-    }
+        input.style.height =
+            "40px";
 
-    function toggleSidebar() {
-        document.getElementById("sidebar").classList.toggle("open");
-    }
 
-    function handleKey(event) {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            sendMessage();
+        /* История для сервера */
+
+        const historyForServer =
+            conversationHistory.slice(-20);
+
+
+        /* =====================
+           AI MESSAGE
+           ===================== */
+
+        const aiMessage =
+            document.createElement("div");
+
+        aiMessage.className =
+            "message ai";
+
+
+        const aiSpan =
+            document.createElement("span");
+
+
+        /* =====================
+           LOADING
+           ===================== */
+
+        const loading =
+            document.createElement("div");
+
+        loading.className =
+            "ai-loading";
+
+
+        const loadingText =
+            document.createElement("span");
+
+        loadingText.textContent =
+            "Рассуждение";
+
+
+        const dots =
+            document.createElement("div");
+
+        dots.className =
+            "loading-dots";
+
+
+        for (
+            let i = 0;
+            i < 3;
+            i++
+        ) {
+
+            const dot =
+                document.createElement("span");
+
+            dots.appendChild(dot);
+        }
+
+
+        loading.appendChild(
+            loadingText
+        );
+
+        loading.appendChild(
+            dots
+        );
+
+
+        aiSpan.appendChild(
+            loading
+        );
+
+        aiMessage.appendChild(
+            aiSpan
+        );
+
+        messages.appendChild(
+            aiMessage
+        );
+
+
+        chat.scrollTop =
+            chat.scrollHeight;
+
+
+        /* =====================
+           STATUS TEXT
+           ===================== */
+
+        const statuses = [
+            "Рассуждение",
+            "Анализирую",
+            "Думаю",
+            "Формирую ответ",
+            "Проверяю",
+            "Готовлю ответ"
+        ];
+
+
+        let statusIndex = 0;
+
+
+        const statusTimer =
+            setInterval(
+                () => {
+
+                    statusIndex =
+                        (
+                            statusIndex + 1
+                        ) %
+                        statuses.length;
+
+
+                    loadingText.textContent =
+                        statuses[
+                            statusIndex
+                        ];
+
+                },
+                2000
+            );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/chat",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                message: text,
+
+                                history:
+                                    historyForServer,
+
+                                model:
+                                    modelSelect.value
+                            })
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                const error =
+                    await response.text();
+
+                throw new Error(
+                    error ||
+                    "Ошибка сервера"
+                );
+            }
+
+
+            if (!response.body) {
+
+                throw new Error(
+                    "Streaming не поддерживается"
+                );
+            }
+
+
+            const reader =
+                response.body.getReader();
+
+
+            const decoder =
+                new TextDecoder(
+                    "utf-8"
+                );
+
+
+            let buffer = "";
+
+            let fullAnswer = "";
+
+            let firstToken = true;
+
+
+            /* =====================
+               STREAM
+               ===================== */
+
+            while (true) {
+
+                const result =
+                    await reader.read();
+
+
+                if (result.done) {
+                    break;
+                }
+
+
+                buffer +=
+                    decoder.decode(
+                        result.value,
+                        {
+                            stream: true
+                        }
+                    );
+
+
+                const lines =
+                    buffer.split("\n");
+
+
+                buffer =
+                    lines.pop() || "";
+
+
+                for (
+                    const line of lines
+                ) {
+
+                    if (
+                        !line.startsWith(
+                            "data: "
+                        )
+                    ) {
+                        continue;
+                    }
+
+
+                    const data =
+                        line.substring(
+                            6
+                        ).trim();
+
+
+                    if (
+                        data ===
+                        "[DONE]"
+                    ) {
+                        continue;
+                    }
+
+
+                    try {
+
+                        const event =
+                            JSON.parse(
+                                data
+                            );
+
+
+                        if (
+                            event.type ===
+                                "text" &&
+                            event.text
+                        ) {
+
+                            if (
+                                firstToken
+                            ) {
+
+                                firstToken =
+                                    false;
+
+
+                                clearInterval(
+                                    statusTimer
+                                );
+
+
+                                loading.remove();
+
+
+                                aiSpan.textContent =
+                                    "";
+                            }
+
+
+                            fullAnswer +=
+                                event.text;
+
+
+                            aiSpan.textContent =
+                                fullAnswer;
+
+
+                            chat.scrollTop =
+                                chat.scrollHeight;
+                        }
+
+
+                    } catch (error) {
+
+                        console.log(
+                            "SSE:",
+                            data
+                        );
+                    }
+                }
+            }
+
+
+            clearInterval(
+                statusTimer
+            );
+
+
+            if (!fullAnswer) {
+
+                aiSpan.textContent =
+                    "ИИ не вернул ответ.";
+            }
+
+
+            /* Сохраняем историю */
+
+            conversationHistory.push({
+                role: "user",
+                content: text
+            });
+
+
+            conversationHistory.push({
+                role: "assistant",
+                content:
+                    fullAnswer
+            });
+
+
+        } catch (error) {
+
+            clearInterval(
+                statusTimer
+            );
+
+
+            loading.remove();
+
+
+            aiSpan.textContent =
+                "Ошибка: " +
+                error.message;
+
+
+            console.error(
+                error
+            );
+
+        } finally {
+
+            isGenerating =
+                false;
+
+            send.disabled =
+                false;
+
+            input.focus();
         }
     }
 
-    // Автоматическое изменение высоты поля
-    input.addEventListener("input", function () {
-        this.style.height = "42px";
-        this.style.height = Math.min(this.scrollHeight, 150) + "px";
-    });
+
+    /* =========================
+       BUTTON
+       ========================= */
+
+    send.addEventListener(
+        "click",
+        sendMessage
+    );
+
+
+    /* =========================
+       ENTER
+       ========================= */
+
+    input.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+            }
+        }
+    );
+
+
+    /* =========================
+       TEXTAREA SIZE
+       ========================= */
+
+    input.addEventListener(
+        "input",
+        function() {
+
+            this.style.height =
+                "40px";
+
+            this.style.height =
+                Math.min(
+                    this.scrollHeight,
+                    160
+                ) + "px";
+        }
+    );
+
+
+    /* =========================
+       NEW CHAT
+       ========================= */
+
+    newChat.addEventListener(
+        "click",
+        function() {
+
+            conversationHistory =
+                [];
+
+            messages.innerHTML =
+                `
+                <div
+                    class="welcome"
+                    id="welcome"
+                >
+                    Чем могу помочь?
+                </div>
+                `;
+
+            input.value = "";
+
+            input.style.height =
+                "40px";
+
+            input.focus();
+        }
+    );
+
 </script>
 
 </body>
