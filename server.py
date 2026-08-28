@@ -4,113 +4,174 @@ import json
 import httpx
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-PORT = int(os.environ.get("PORT", "10000"))
 
-ODIROUTER_API_KEY = os.environ.get("ODIROUTER_API_KEY")
+# =========================
+# НАСТРОЙКИ
+# =========================
+
+PORT = int(os.environ.get("PORT", "10000"))
 
 API_BASE = "https://api.odirouter.ai/v1"
 
+
+# Отдельный ключ для каждой модели
+API_KEYS = {
+    "gpt": os.environ.get("GPTMINI_KEY"),
+    "gemini": os.environ.get("PROPREW_KEY"),
+    "nano": os.environ.get("NANOB_KEY"),
+}
+
+
+# Модели OdiRouter
 MODELS = {
     "gpt": "free-gpt-5.4-mini",
     "gemini": "free-gemini-3.1-pro-preview",
 }
 
+
 SYSTEM_PROMPT = """
-Ты — полезный ИИ-ассистент.
+Ты — ИИ-ассистент.
 
 Отвечай на русском языке, если пользователь пишет на русском.
+
 Отвечай понятно, точно и по существу.
+
 Не выдумывай факты.
-Если не уверен в информации, прямо сообщи об этом.
+
+Если ты не уверен в информации, прямо скажи об этом.
+
+Старайся давать полезный и хорошо структурированный ответ.
 """
 
-API_KEYS = {
-    "gpt": os.environ.get("GPTMINI_KEY"),
-    "gemini": os.environ.get("PROPREW_KEY"),
-    "nano": os.environ.get("NANOB_KEY")
-}
+
+# =========================
+# HTTP SERVER
+# =========================
 
 class Handler(BaseHTTPRequestHandler):
 
+    # -------------------------
+    # JSON RESPONSE
+    # -------------------------
+
     def send_json(self, status, data):
+
         body = json.dumps(
             data,
             ensure_ascii=False
         ).encode("utf-8")
 
         self.send_response(status)
+
         self.send_header(
             "Content-Type",
             "application/json; charset=utf-8"
         )
+
         self.send_header(
             "Content-Length",
             str(len(body))
         )
+
         self.send_header(
             "Access-Control-Allow-Origin",
             "*"
         )
+
         self.send_header(
             "Access-Control-Allow-Headers",
             "Content-Type"
         )
+
         self.send_header(
             "Access-Control-Allow-Methods",
             "GET, POST, OPTIONS"
         )
+
         self.end_headers()
 
         self.wfile.write(body)
 
+
+    # -------------------------
+    # OPTIONS
+    # -------------------------
+
     def do_OPTIONS(self):
+
         self.send_response(204)
+
         self.send_header(
             "Access-Control-Allow-Origin",
             "*"
         )
+
         self.send_header(
             "Access-Control-Allow-Headers",
             "Content-Type"
         )
+
         self.send_header(
             "Access-Control-Allow-Methods",
             "GET, POST, OPTIONS"
         )
+
         self.end_headers()
+
+
+    # -------------------------
+    # GET
+    # -------------------------
 
     def do_GET(self):
 
-        if self.path in ("/", "/index.html"):
+        # Главная страница
+        if self.path in (
+            "/",
+            "/index.html"
+        ):
 
             try:
-                with open("index.html", "rb") as file:
+
+                with open(
+                    "index.html",
+                    "rb"
+                ) as file:
+
                     body = file.read()
 
+
                 self.send_response(200)
+
                 self.send_header(
                     "Content-Type",
                     "text/html; charset=utf-8"
                 )
+
                 self.send_header(
                     "Content-Length",
                     str(len(body))
                 )
+
                 self.end_headers()
 
                 self.wfile.write(body)
+
 
             except FileNotFoundError:
 
                 self.send_json(
                     500,
                     {
-                        "error": "index.html не найден"
+                        "error":
+                            "index.html не найден"
                     }
                 )
 
             return
 
+
+        # Проверка сервера
         if self.path == "/health":
 
             self.send_json(
@@ -122,6 +183,8 @@ class Handler(BaseHTTPRequestHandler):
 
             return
 
+
+        # Остальные адреса
         self.send_json(
             404,
             {
@@ -129,8 +192,14 @@ class Handler(BaseHTTPRequestHandler):
             }
         )
 
+
+    # -------------------------
+    # POST
+    # -------------------------
+
     def do_POST(self):
 
+        # API чата
         if self.path != "/api/chat":
 
             self.send_json(
@@ -142,17 +211,10 @@ class Handler(BaseHTTPRequestHandler):
 
             return
 
-        if not ODIROUTER_API_KEY:
 
-            self.send_json(
-                500,
-                {
-                    "error":
-                        "ODIROUTER_API_KEY не настроен"
-                }
-            )
-
-            return
+        # -------------------------
+        # Читаем запрос
+        # -------------------------
 
         try:
 
@@ -169,137 +231,204 @@ class Handler(BaseHTTPRequestHandler):
                 raw.decode("utf-8")
             )
 
-            user_text = str(
-                data.get("message", "")
-            ).strip()
+        except Exception:
 
-            history = data.get(
-                "history",
-                []
+            self.send_json(
+                400,
+                {
+                    "error":
+                        "Некорректный JSON"
+                }
             )
 
-            model_key = data.get(
-                "model",
-                "gpt"
+            return
+
+
+        # -------------------------
+        # Сообщение
+        # -------------------------
+
+        user_text = str(
+            data.get(
+                "message",
+                ""
+            )
+        ).strip()
+
+
+        if not user_text:
+
+            self.send_json(
+                400,
+                {
+                    "error":
+                        "Пустое сообщение"
+                }
             )
 
-            model = MODELS.get(
-                model_key,
-                MODELS["gpt"]
+            return
+
+
+        # -------------------------
+        # Выбор модели
+        # -------------------------
+
+        model_key = data.get(
+            "model",
+            "gpt"
+        )
+
+
+        if model_key not in MODELS:
+
+            self.send_json(
+                400,
+                {
+                    "error":
+                        "Неизвестная модель"
+                }
             )
 
-            if not user_text:
+            return
 
-                self.send_json(
-                    400,
+
+        model = MODELS[
+            model_key
+        ]
+
+
+        # -------------------------
+        # Выбор ключа
+        # -------------------------
+
+        api_key = API_KEYS.get(
+            model_key
+        )
+
+
+        if not api_key:
+
+            self.send_json(
+                500,
+                {
+                    "error":
+                        "API-ключ для выбранной модели не настроен на Render"
+                }
+            )
+
+            return
+
+
+        # -------------------------
+        # История
+        # -------------------------
+
+        history = data.get(
+            "history",
+            []
+        )
+
+
+        messages = [
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            }
+        ]
+
+
+        if isinstance(
+            history,
+            list
+        ):
+
+            for item in history[-20:]:
+
+                if not isinstance(
+                    item,
+                    dict
+                ):
+                    continue
+
+
+                role = item.get(
+                    "role"
+                )
+
+                content = item.get(
+                    "content"
+                )
+
+
+                if role not in (
+                    "user",
+                    "assistant"
+                ):
+                    continue
+
+
+                if not isinstance(
+                    content,
+                    str
+                ):
+                    continue
+
+
+                messages.append(
                     {
-                        "error":
-                            "Пустое сообщение"
+                        "role": role,
+                        "content": content[:30000]
                     }
                 )
 
-                return
 
-            messages = [
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                }
-            ]
+        # Новое сообщение
 
-            if isinstance(history, list):
-
-                for item in history[-20:]:
-
-                    if not isinstance(
-                        item,
-                        dict
-                    ):
-                        continue
-
-                    role = item.get("role")
-                    content = item.get("content")
-
-                    if role not in (
-                        "user",
-                        "assistant"
-                    ):
-                        continue
-
-                    if not isinstance(
-                        content,
-                        str
-                    ):
-                        continue
-
-                    messages.append(
-                        {
-                            "role": role,
-                            "content": content[:30000]
-                        }
-                    )
-
-            messages.append(
-                {
-                    "role": "user",
-                    "content": user_text
-                }
-            )
-
-            payload = {
-                "model": model,
-                "messages": messages,
-                "stream": True,
-                "stream_options": {
-                    "include_usage": True
-                }
+        messages.append(
+            {
+                "role": "user",
+                "content": user_text
             }
+        )
 
-            headers = {
-                "Authorization":
-                    f"Bearer {ODIROUTER_API_KEY}",
 
-                "Content-Type":
-                    "application/json",
+        # -------------------------
+        # API REQUEST
+        # -------------------------
 
-                "Accept":
-                    "text/event-stream",
-
-                "Cache-Control":
-                    "no-cache",
-
-                "X-Request-Id":
-                    f"site-{os.urandom(8).hex()}"
+        payload = {
+            "model": model,
+            "messages": messages,
+            "stream": True,
+            "stream_options": {
+                "include_usage": True
             }
+        }
 
-            self.send_response(200)
 
-            self.send_header(
-                "Content-Type",
-                "text/event-stream; charset=utf-8"
-            )
+        headers = {
+            "Authorization":
+                f"Bearer {api_key}",
 
-            self.send_header(
-                "Cache-Control",
-                "no-cache"
-            )
+            "Content-Type":
+                "application/json",
 
-            self.send_header(
-                "Connection",
-                "keep-alive"
-            )
+            "Accept":
+                "text/event-stream",
 
-            self.send_header(
-                "Access-Control-Allow-Origin",
-                "*"
-            )
+            "Cache-Control":
+                "no-cache",
 
-            self.send_header(
-                "X-Accel-Buffering",
-                "no"
-            )
+            "X-Request-Id":
+                f"site-{os.urandom(8).hex()}"
+        }
 
-            self.end_headers()
+
+        # -------------------------
+        # STREAM RESPONSE
+        # -------------------------
+
+        try:
 
             with httpx.Client(
                 timeout=httpx.Timeout(
@@ -310,12 +439,19 @@ class Handler(BaseHTTPRequestHandler):
                 )
             ) as client:
 
+
                 with client.stream(
                     "POST",
+
                     f"{API_BASE}/chat/completions",
+
                     headers=headers,
+
                     json=payload
                 ) as response:
+
+
+                    # Ошибка API
 
                     if response.status_code >= 400:
 
@@ -324,114 +460,185 @@ class Handler(BaseHTTPRequestHandler):
                             errors="replace"
                         )
 
-                        self.wfile.write(
-                            (
-                                "data: " +
-                                json.dumps(
-                                    {
-                                        "error":
-                                            f"API HTTP {response.status_code}",
-                                        "details":
-                                            error_text[:1000]
-                                    },
-                                    ensure_ascii=False
-                                ) +
-                                "\n\n"
-                            ).encode("utf-8")
+
+                        self.send_json(
+                            502,
+                            {
+                                "error":
+                                    f"OdiRouter HTTP {response.status_code}",
+
+                                "details":
+                                    error_text[:2000]
+                            }
                         )
 
-                        self.wfile.flush()
                         return
+
+
+                    # -------------------------
+                    # SSE HEADERS
+                    # -------------------------
+
+                    self.send_response(200)
+
+                    self.send_header(
+                        "Content-Type",
+                        "text/event-stream; charset=utf-8"
+                    )
+
+                    self.send_header(
+                        "Cache-Control",
+                        "no-cache"
+                    )
+
+                    self.send_header(
+                        "Connection",
+                        "keep-alive"
+                    )
+
+                    self.send_header(
+                        "Access-Control-Allow-Origin",
+                        "*"
+                    )
+
+                    self.send_header(
+                        "X-Accel-Buffering",
+                        "no"
+                    )
+
+                    self.end_headers()
+
+
+                    # -------------------------
+                    # Читаем поток
+                    # -------------------------
 
                     for line in response.iter_lines():
 
                         if not line:
                             continue
 
-                        if line.startswith("data: "):
 
-                            data_text = line[6:]
+                        if not line.startswith(
+                            "data: "
+                        ):
+                            continue
 
-                            if data_text == "[DONE]":
+
+                        data_text = line[6:]
+
+
+                        # Конец потока
+
+                        if data_text == "[DONE]":
+
+                            self.wfile.write(
+                                b"data: [DONE]\n\n"
+                            )
+
+                            self.wfile.flush()
+
+                            break
+
+
+                        try:
+
+                            chunk = json.loads(
+                                data_text
+                            )
+
+
+                        except json.JSONDecodeError:
+
+                            continue
+
+
+                        # -------------------------
+                        # TEXT
+                        # -------------------------
+
+                        choices = chunk.get(
+                            "choices",
+                            []
+                        )
+
+
+                        if choices:
+
+                            delta = choices[0].get(
+                                "delta",
+                                {}
+                            )
+
+
+                            text = delta.get(
+                                "content",
+                                ""
+                            )
+
+
+                            if text:
+
+                                event = {
+                                    "type": "text",
+                                    "text": text
+                                }
+
 
                                 self.wfile.write(
-                                    b"data: [DONE]\n\n"
+                                    (
+                                        "data: " +
+
+                                        json.dumps(
+                                            event,
+                                            ensure_ascii=False
+                                        ) +
+
+                                        "\n\n"
+                                    ).encode(
+                                        "utf-8"
+                                    )
                                 )
+
 
                                 self.wfile.flush()
-                                break
 
-                            try:
 
-                                chunk = json.loads(
-                                    data_text
+                        # -------------------------
+                        # USAGE
+                        # -------------------------
+
+                        usage = chunk.get(
+                            "usage"
+                        )
+
+
+                        if usage:
+
+                            event = {
+                                "type": "usage",
+                                "usage": usage
+                            }
+
+
+                            self.wfile.write(
+                                (
+                                    "data: " +
+
+                                    json.dumps(
+                                        event,
+                                        ensure_ascii=False
+                                    ) +
+
+                                    "\n\n"
+                                ).encode(
+                                    "utf-8"
                                 )
+                            )
 
-                                choices = chunk.get(
-                                    "choices",
-                                    []
-                                )
 
-                                text = ""
+                            self.wfile.flush()
 
-                                if choices:
-
-                                    delta = choices[0].get(
-                                        "delta",
-                                        {}
-                                    )
-
-                                    text = delta.get(
-                                        "content",
-                                        ""
-                                    )
-
-                                if text:
-
-                                    event = {
-                                        "type": "text",
-                                        "text": text
-                                    }
-
-                                    self.wfile.write(
-                                        (
-                                            "data: " +
-                                            json.dumps(
-                                                event,
-                                                ensure_ascii=False
-                                            ) +
-                                            "\n\n"
-                                        ).encode("utf-8")
-                                    )
-
-                                    self.wfile.flush()
-
-                                usage = chunk.get(
-                                    "usage"
-                                )
-
-                                if usage:
-
-                                    event = {
-                                        "type": "usage",
-                                        "usage": usage
-                                    }
-
-                                    self.wfile.write(
-                                        (
-                                            "data: " +
-                                            json.dumps(
-                                                event,
-                                                ensure_ascii=False
-                                            ) +
-                                            "\n\n"
-                                        ).encode("utf-8")
-                                    )
-
-                                    self.wfile.flush()
-
-                            except json.JSONDecodeError:
-                                continue
 
         except Exception as e:
 
@@ -440,11 +647,13 @@ class Handler(BaseHTTPRequestHandler):
                 repr(e)
             )
 
+
             try:
 
                 self.wfile.write(
                     (
                         "data: " +
+
                         json.dumps(
                             {
                                 "error":
@@ -452,27 +661,54 @@ class Handler(BaseHTTPRequestHandler):
                             },
                             ensure_ascii=False
                         ) +
+
                         "\n\n"
-                    ).encode("utf-8")
+                    ).encode(
+                        "utf-8"
+                    )
                 )
+
 
                 self.wfile.flush()
 
+
             except Exception:
+
                 pass
 
-    def log_message(self, format, *args):
-        print(format % args)
 
+    # -------------------------
+    # LOG
+    # -------------------------
+
+    def log_message(
+        self,
+        format,
+        *args
+    ):
+
+        print(
+            format % args
+        )
+
+
+# =========================
+# START SERVER
+# =========================
 
 server = ThreadingHTTPServer(
-    ("0.0.0.0", PORT),
+    (
+        "0.0.0.0",
+        PORT
+    ),
     Handler
 )
+
 
 print(
     f"Server started on port {PORT}"
 )
+
 
 server.serve_forever()
 ```
