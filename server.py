@@ -1,4 +1,3 @@
-```python
 import os
 import json
 import httpx
@@ -392,6 +391,5 @@ server = ThreadingHTTPServer(
 print(
     f"Server started on port {PORT}"
 )
-
 server.serve_forever()
 ```
