@@ -1,712 +1,697 @@
-```html
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>ИИ</title>
+```
+<title>ИИ</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        background: #fff;
+        color: #202020;
+    }
+
+    body {
+        overflow: hidden;
+    }
+
+    button,
+    textarea {
+        font-family: inherit;
+    }
+
+    .app {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+    }
+
+    /* SIDEBAR */
+
+    .sidebar {
+        width: 260px;
+        height: 100%;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 18px 14px;
+        border-right: 1px solid #ededed;
+        background: #fff;
+    }
+
+    .logo {
+        padding: 5px 10px 20px;
+        font-size: 21px;
+        font-weight: 700;
+    }
+
+    .new-chat {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid #e1e1e1;
+        border-radius: 12px;
+        background: #fff;
+        color: #222;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        transition:
+            background .15s,
+            box-shadow .15s,
+            border-color .15s,
+            transform .15s;
+    }
+
+    .new-chat:hover {
+        background: #fafafa;
+        border-color: #d5d5d5;
+        box-shadow: 0 2px 9px rgba(0, 0, 0, .05);
+        transform: translateY(-1px);
+    }
+
+    .history-title {
+        margin: 25px 10px 9px;
+        font-size: 12px;
+        color: #8b8b8b;
+    }
+
+    .history {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .history-empty {
+        padding: 10px;
+        color: #999;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .history-item {
+        display: block;
+        width: 100%;
+        margin-bottom: 3px;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: #333;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition:
+            background .15s,
+            box-shadow .15s,
+            transform .15s;
+    }
+
+    .history-item:hover {
+        background: #f7f7f7;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
+        transform: translateX(1px);
+    }
+
+    .account {
+        width: 100%;
+        padding: 11px 10px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: #333;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        transition:
+            background .15s,
+            box-shadow .15s;
+    }
+
+    .account:hover {
+        background: #f7f7f7;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
+    }
+
+    /* MAIN */
+
+    .main {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+    }
+
+    /* TOPBAR */
+
+    .topbar {
+        position: relative;
+        z-index: 20;
+        height: 60px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        padding: 0 22px;
+        border-bottom: 1px solid #eeeeee;
+        background: #fff;
+    }
+
+    .model-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: #202020;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+            background .15s,
+            box-shadow .15s;
+    }
+
+    .model-button:hover {
+        background: #f6f6f6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+    }
+
+    .model-arrow {
+        font-size: 12px;
+        color: #777;
+        transition: transform .15s;
+    }
+
+    .model-button.open .model-arrow {
+        transform: rotate(180deg);
+    }
+
+    /* MODEL MENU */
+
+    .model-menu {
+        position: absolute;
+        top: 51px;
+        left: 22px;
+        width: 270px;
+        padding: 6px;
+        border: 1px solid #e4e4e4;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, .10);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px) scale(.98);
+        transform-origin: top left;
+        transition:
+            opacity .14s,
+            transform .14s,
+            visibility .14s;
+    }
+
+    .model-menu.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+    .model-option {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 12px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: #222;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        transition: background .15s;
+    }
+
+    .model-option:hover {
+        background: #f5f5f5;
+    }
+
+    .model-option.selected {
+        background: #f3f3f3;
+    }
+
+    .check {
+        width: 18px;
+        color: #222;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    /* CHAT */
+
+    .chat {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 30px 20px 155px;
+    }
+
+    .messages {
+        width: min(850px, 100%);
+        margin: 0 auto;
+    }
+
+    .welcome {
+        min-height: 55vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        font-size: 28px;
+        font-weight: 600;
+        text-align: center;
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+            opacity .35s ease,
+            transform .35s ease;
+    }
+
+    .welcome.changing {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    .message {
+        display: flex;
+        width: 100%;
+        margin-bottom: 24px;
+        line-height: 1.55;
+        font-size: 15px;
+    }
+
+    .message.user {
+        justify-content: flex-end;
+    }
+
+    .message.user .message-content {
+        max-width: 75%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        background: #f1f1f1;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .message.ai {
+        justify-content: flex-start;
+    }
+
+    .message.ai .message-content {
+        max-width: 90%;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    /* LOADING */
+
+    .ai-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #777;
+    }
+
+    .loading-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .loading-dots span {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #777;
+        animation: loadingDot 1.2s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) {
+        animation-delay: .15s;
+    }
+
+    .loading-dots span:nth-child(3) {
+        animation-delay: .3s;
+    }
+
+    @keyframes loadingDot {
+        0%,
+        60%,
+        100% {
+            opacity: .25;
+            transform: translateY(0);
         }
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background: #fff;
-            color: #202020;
+        30% {
+            opacity: 1;
+            transform: translateY(-2px);
         }
+    }
 
-        body {
-            overflow: hidden;
-        }
+    /* INPUT */
 
-        button,
-        textarea {
-            font-family: inherit;
-        }
+    .input-area {
+        position: absolute;
+        z-index: 10;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 18px 20px 24px;
+        background: linear-gradient(
+            to top,
+            #fff 72%,
+            rgba(255, 255, 255, 0)
+        );
+    }
 
-        /* =========================
-           APP
-           ========================= */
+    .input-box {
+        width: min(850px, 100%);
+        min-height: 58px;
+        margin: 0 auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 9px;
+        padding: 8px 8px 8px 14px;
+        border: 1px solid #dcdcdc;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, .05);
+        transition:
+            border-color .15s,
+            box-shadow .15s;
+    }
 
-        .app {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-        }
+    .input-box:focus-within {
+        border-color: #cfcfcf;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .07);
+    }
 
-        /* =========================
-           SIDEBAR
-           ========================= */
+    #input {
+        flex: 1;
+        width: 100%;
+        min-height: 40px;
+        max-height: 160px;
+        padding: 9px 2px;
+        border: none;
+        outline: none;
+        resize: none;
+        background: transparent;
+        color: #202020;
+        font-size: 15px;
+        line-height: 1.4;
+    }
 
+    #input::placeholder {
+        color: #999;
+        transition: opacity .2s ease;
+    }
+
+    #send {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: #202020;
+        color: #fff;
+        font-size: 19px;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+            opacity .15s,
+            transform .15s,
+            box-shadow .15s;
+    }
+
+    #send:hover:not(:disabled) {
+        opacity: .88;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .12);
+    }
+
+    #send:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    #send:disabled {
+        opacity: .4;
+        cursor: default;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 700px) {
         .sidebar {
-            width: 260px;
-            height: 100%;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            padding: 18px 14px;
-            border-right: 1px solid #ededed;
-            background: #fff;
+            display: none;
         }
-
-        .logo {
-            padding: 5px 10px 20px;
-            font-size: 21px;
-            font-weight: 700;
-        }
-
-        .new-chat {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1px solid #e1e1e1;
-            border-radius: 12px;
-            background: #fff;
-            color: #222;
-            font-size: 14px;
-            text-align: left;
-            cursor: pointer;
-            transition: background .15s, box-shadow .15s, border-color .15s;
-        }
-
-        .new-chat:hover {
-            background: #fafafa;
-            border-color: #d5d5d5;
-            box-shadow: 0 2px 9px rgba(0, 0, 0, .05);
-        }
-
-        .history-title {
-            margin: 25px 10px 9px;
-            font-size: 12px;
-            color: #8b8b8b;
-        }
-
-        .history {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        .history-empty {
-            padding: 10px;
-            color: #999;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        .history-item {
-            display: block;
-            width: 100%;
-            margin-bottom: 3px;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #333;
-            font-size: 14px;
-            text-align: left;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: background .15s, box-shadow .15s;
-        }
-
-        .history-item:hover {
-            background: #f7f7f7;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
-        }
-
-        .account {
-            width: 100%;
-            padding: 11px 10px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #333;
-            font-size: 14px;
-            text-align: left;
-            cursor: pointer;
-            transition: background .15s, box-shadow .15s;
-        }
-
-        .account:hover {
-            background: #f7f7f7;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, .03);
-        }
-
-        /* =========================
-           MAIN
-           ========================= */
-
-        .main {
-            position: relative;
-            flex: 1;
-            min-width: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
-
-        /* =========================
-           TOPBAR
-           ========================= */
 
         .topbar {
-            position: relative;
-            z-index: 20;
-            height: 60px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 22px;
-            border-bottom: 1px solid #eeeeee;
-            background: #fff;
+            height: 56px;
+            padding: 0 10px;
         }
 
         .model-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 11px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #202020;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .15s, box-shadow .15s;
+            padding: 8px 10px;
         }
-
-        .model-button:hover {
-            background: #f6f6f6;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
-        }
-
-        .model-arrow {
-            font-size: 12px;
-            color: #777;
-            transition: transform .15s;
-        }
-
-        .model-button.open .model-arrow {
-            transform: rotate(180deg);
-        }
-
-        /* =========================
-           MODEL MENU
-           ========================= */
 
         .model-menu {
-            position: absolute;
-            top: 51px;
-            left: 22px;
-            width: 270px;
-            padding: 6px;
-            border: 1px solid #e4e4e4;
-            border-radius: 14px;
-            background: #fff;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, .10);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-5px) scale(.98);
-            transform-origin: top left;
-            transition: opacity .14s, transform .14s, visibility .14s;
+            top: 49px;
+            left: 10px;
+            right: 10px;
+            width: auto;
         }
-
-        .model-menu.open {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-
-        .model-option {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 11px 12px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #222;
-            font-size: 14px;
-            text-align: left;
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-        .model-option:hover {
-            background: #f5f5f5;
-        }
-
-        .model-option.selected {
-            background: #f3f3f3;
-        }
-
-        .check {
-            width: 18px;
-            color: #222;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        /* =========================
-           CHAT
-           ========================= */
 
         .chat {
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-            padding: 30px 20px 155px;
-        }
-
-        .messages {
-            width: min(850px, 100%);
-            margin: 0 auto;
+            padding: 25px 13px 140px;
         }
 
         .welcome {
             min-height: 55vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            font-size: 28px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .message {
-            display: flex;
-            width: 100%;
-            margin-bottom: 24px;
-            line-height: 1.55;
-            font-size: 15px;
-        }
-
-        .message.user {
-            justify-content: flex-end;
+            font-size: 24px;
         }
 
         .message.user .message-content {
-            max-width: 75%;
-            padding: 10px 15px;
-            border-radius: 18px;
-            background: #f1f1f1;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        .message.ai {
-            justify-content: flex-start;
+            max-width: 88%;
         }
 
         .message.ai .message-content {
-            max-width: 90%;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
+            max-width: 95%;
         }
-
-        /* =========================
-           LOADING
-           ========================= */
-
-        .ai-loading {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #777;
-        }
-
-        .loading-dots {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .loading-dots span {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #777;
-            animation: loadingDot 1.2s infinite ease-in-out;
-        }
-
-        .loading-dots span:nth-child(2) {
-            animation-delay: .15s;
-        }
-
-        .loading-dots span:nth-child(3) {
-            animation-delay: .3s;
-        }
-
-        @keyframes loadingDot {
-            0%,
-            60%,
-            100% {
-                opacity: .25;
-                transform: translateY(0);
-            }
-
-            30% {
-                opacity: 1;
-                transform: translateY(-2px);
-            }
-        }
-
-        /* =========================
-           INPUT
-           ========================= */
 
         .input-area {
-            position: absolute;
-            z-index: 10;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            padding: 18px 20px 24px;
-            background: linear-gradient(
-                to top,
-                #fff 72%,
-                rgba(255, 255, 255, 0)
-            );
+            padding: 11px 10px 16px;
         }
 
         .input-box {
-            width: min(850px, 100%);
-            min-height: 58px;
-            margin: 0 auto;
-            display: flex;
-            align-items: flex-end;
-            gap: 9px;
-            padding: 8px 8px 8px 14px;
-            border: 1px solid #dcdcdc;
-            border-radius: 18px;
-            background: #fff;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, .05);
-            transition: border-color .15s, box-shadow .15s;
+            min-height: 56px;
+            border-radius: 17px;
         }
+    }
+</style>
+```
 
-        .input-box:focus-within {
-            border-color: #cfcfcf;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, .07);
-        }
-
-        #input {
-            flex: 1;
-            width: 100%;
-            min-height: 40px;
-            max-height: 160px;
-            padding: 9px 2px;
-            border: none;
-            outline: none;
-            resize: none;
-            background: transparent;
-            color: #202020;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-
-        #input::placeholder {
-            color: #999;
-        }
-
-        #send {
-            width: 40px;
-            height: 40px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            border: none;
-            border-radius: 50%;
-            background: #202020;
-            color: #fff;
-            font-size: 19px;
-            line-height: 1;
-            cursor: pointer;
-            transition: opacity .15s, transform .15s, box-shadow .15s;
-        }
-
-        #send:hover:not(:disabled) {
-            opacity: .88;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, .12);
-        }
-
-        #send:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        #send:disabled {
-            opacity: .4;
-            cursor: default;
-        }
-
-        /* =========================
-           MOBILE
-           ========================= */
-
-        @media (max-width: 700px) {
-
-            .sidebar {
-                display: none;
-            }
-
-            .topbar {
-                height: 56px;
-                padding: 0 10px;
-            }
-
-            .model-button {
-                padding: 8px 10px;
-            }
-
-            .model-menu {
-                top: 49px;
-                left: 10px;
-                right: 10px;
-                width: auto;
-            }
-
-            .chat {
-                padding: 25px 13px 140px;
-            }
-
-            .welcome {
-                min-height: 55vh;
-                font-size: 24px;
-            }
-
-            .message.user .message-content {
-                max-width: 88%;
-            }
-
-            .message.ai .message-content {
-                max-width: 95%;
-            }
-
-            .input-area {
-                padding: 11px 10px 16px;
-            }
-
-            .input-box {
-                min-height: 56px;
-                border-radius: 17px;
-            }
-        }
-    </style>
 </head>
 
 <body>
 
 <div class="app">
 
-    <aside class="sidebar">
+```
+<aside class="sidebar">
 
-        <div class="logo">
-            ИИ
-        </div>
+    <div class="logo">
+        ИИ
+    </div>
+
+    <button
+        class="new-chat"
+        id="newChat"
+        type="button"
+    >
+        ＋ Новый чат
+    </button>
+
+    <div class="history-title">
+        История
+    </div>
+
+    <div
+        class="history"
+        id="history"
+    ></div>
+
+    <button
+        class="account"
+        id="accountButton"
+        type="button"
+    >
+        👤 Аккаунт
+    </button>
+
+</aside>
+
+<main class="main">
+
+    <header class="topbar">
 
         <button
-            class="new-chat"
-            id="newChat"
+            class="model-button"
+            id="modelButton"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
         >
-            ＋ Новый чат
-        </button>
+            <span id="selectedModel">
+                Gemini 3.1 Pro
+            </span>
 
-        <div class="history-title">
-            История
-        </div>
+            <span class="model-arrow">
+                ▾
+            </span>
+        </button>
 
         <div
-            class="history"
-            id="history"
+            class="model-menu"
+            id="modelMenu"
         >
-        </div>
-
-        <button
-            class="account"
-            id="accountButton"
-        >
-            👤 Аккаунт
-        </button>
-
-    </aside>
-
-
-    <main class="main">
-
-        <header class="topbar">
 
             <button
-                class="model-button"
-                id="modelButton"
+                class="model-option"
+                data-model="gpt"
+                data-name="GPT-5.4 Mini"
+                type="button"
             >
-                <span id="selectedModel">
-                    GPT-5.4 Mini
-                </span>
-
-                <span class="model-arrow">
-                    ▾
-                </span>
+                <span>GPT-5.4 Mini</span>
+                <span class="check"></span>
             </button>
 
-
-            <div
-                class="model-menu"
-                id="modelMenu"
+            <button
+                class="model-option selected"
+                data-model="gemini"
+                data-name="Gemini 3.1 Pro"
+                type="button"
             >
+                <span>Gemini 3.1 Pro</span>
+                <span class="check">✓</span>
+            </button>
 
-                <button
-                    class="model-option selected"
-                    data-model="gpt"
-                    data-name="GPT-5.4 Mini"
-                >
-                    <span>
-                        GPT-5.4 Mini
-                    </span>
+            <button
+                class="model-option"
+                data-model="qwen"
+                data-name="Qwen 3.5 Plus"
+                type="button"
+            >
+                <span>Qwen 3.5 Plus</span>
+                <span class="check"></span>
+            </button>
 
-                    <span class="check">
-                        ✓
-                    </span>
-                </button>
+        </div>
 
+    </header>
 
-                <button
-                    class="model-option"
-                    data-model="gemini"
-                    data-name="Gemini 3.1 Pro Preview"
-                >
-                    <span>
-                        Gemini 3.1 Pro Preview
-                    </span>
+    <section
+        class="chat"
+        id="chat"
+    >
 
-                    <span class="check">
-                    </span>
-                </button>
-
-
-                <button
-                    class="model-option"
-                    data-model="qwen"
-                    data-name="Qwen 3.5 Plus"
-                >
-                    <span>
-                        Qwen 3.5 Plus
-                    </span>
-
-                    <span class="check">
-                    </span>
-                </button>
-
-            </div>
-
-        </header>
-
-
-        <section
-            class="chat"
-            id="chat"
+        <div
+            class="messages"
+            id="messages"
         >
 
             <div
-                class="messages"
-                id="messages"
+                class="welcome"
+                id="welcome"
             >
-
-                <div
-                    class="welcome"
-                    id="welcome"
-                >
-                    Чем могу помочь?
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <div class="input-area">
-
-            <div class="input-box">
-
-                <textarea
-                    id="input"
-                    rows="1"
-                    placeholder="Напишите сообщение..."
-                ></textarea>
-
-                <button
-                    id="send"
-                    title="Отправить"
-                    aria-label="Отправить"
-                >
-                    ↑
-                </button>
-
+                Чем могу помочь?
             </div>
 
         </div>
 
-    </main>
+    </section>
+
+    <div class="input-area">
+
+        <div class="input-box">
+
+            <textarea
+                id="input"
+                rows="1"
+                autocomplete="off"
+                spellcheck="true"
+            ></textarea>
+
+            <button
+                id="send"
+                type="button"
+                title="Отправить"
+                aria-label="Отправить"
+            >
+                ↑
+            </button>
+
+        </div>
+
+    </div>
+
+</main>
+```
 
 </div>
 
-
 <script>
-
     /* =========================
        ELEMENTS
        ========================= */
 
-    const input =
-        document.getElementById("input");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const messages = document.getElementById("messages");
+    const chat = document.getElementById("chat");
+    const newChat = document.getElementById("newChat");
+    const historyElement = document.getElementById("history");
 
-    const send =
-        document.getElementById("send");
-
-    const messages =
-        document.getElementById("messages");
-
-    const welcome =
-        document.getElementById("welcome");
-
-    const chat =
-        document.getElementById("chat");
-
-    const newChat =
-        document.getElementById("newChat");
-
-    const historyElement =
-        document.getElementById("history");
-
-    const modelButton =
-        document.getElementById("modelButton");
-
-    const modelMenu =
-        document.getElementById("modelMenu");
-
-    const selectedModel =
-        document.getElementById("selectedModel");
+    const modelButton = document.getElementById("modelButton");
+    const modelMenu = document.getElementById("modelMenu");
+    const selectedModel = document.getElementById("selectedModel");
 
     const modelOptions =
-        document.querySelectorAll(
-            ".model-option"
-        );
+        document.querySelectorAll(".model-option");
 
 
     /* =========================
@@ -717,9 +702,151 @@
 
     let isGenerating = false;
 
-    let selectedModelKey = "gpt";
+    let selectedModelKey = "gemini";
 
     let currentChatTitle = "Новый чат";
+
+    let welcomeTimer = null;
+
+    let placeholderTimer = null;
+
+
+    /* =========================
+       WELCOME PHRASES
+       ========================= */
+
+    const welcomePhrases = [
+        "Чем могу помочь?",
+        "Что хотите узнать?",
+        "Как дела?",
+        "С чего начнём?",
+        "Что будем делать?",
+        "Есть вопрос?",
+        "Что вас интересует?",
+        "Готов помочь.",
+        "Что подсказать?",
+        "Что хотите обсудить?",
+        "Давайте начнём.",
+        "О чём поговорим?"
+    ];
+
+
+    /* =========================
+       PLACEHOLDERS
+       ========================= */
+
+    const placeholders = [
+        "Введите текст...",
+        "Задайте вопрос...",
+        "Что хотите узнать?",
+        "Напишите свой вопрос...",
+        "Спросите что-нибудь...",
+        "Чем вам помочь?",
+        "Введите сообщение...",
+        "Что вас интересует?",
+        "Опишите задачу...",
+        "Нужна помощь с чем-то?",
+        "Что будем делать?",
+        "Расскажите, что нужно сделать...",
+        "Задайте любую задачу...",
+        "Что хотите обсудить?",
+        "Напишите, что вас интересует...",
+        "Есть вопрос? Задавайте...",
+        "Что подсказать?",
+        "С чего начнём?",
+        "Введите свой запрос...",
+        "Попробуйте задать вопрос..."
+    ];
+
+
+    /* =========================
+       RANDOM HELPERS
+       ========================= */
+
+    function randomItem(array) {
+        return array[
+            Math.floor(Math.random() * array.length)
+        ];
+    }
+
+
+    function setRandomPlaceholder() {
+        if (!input) {
+            return;
+        }
+
+        input.placeholder = randomItem(placeholders);
+    }
+
+
+    /* =========================
+       WELCOME ANIMATION
+       ========================= */
+
+    function stopWelcomeAnimation() {
+        if (welcomeTimer) {
+            clearInterval(welcomeTimer);
+            welcomeTimer = null;
+        }
+    }
+
+
+    function startWelcomeAnimation() {
+        stopWelcomeAnimation();
+
+        const welcomeElement =
+            document.getElementById("welcome");
+
+        if (!welcomeElement) {
+            return;
+        }
+
+        let currentText =
+            welcomeElement.textContent.trim();
+
+        let available =
+            welcomePhrases.filter(
+                phrase => phrase !== currentText
+            );
+
+        welcomeTimer = setInterval(() => {
+
+            const current =
+                document.getElementById("welcome");
+
+            if (!current) {
+                stopWelcomeAnimation();
+                return;
+            }
+
+            current.classList.add("changing");
+
+            setTimeout(() => {
+
+                const element =
+                    document.getElementById("welcome");
+
+                if (!element) {
+                    return;
+                }
+
+                available =
+                    welcomePhrases.filter(
+                        phrase =>
+                            phrase !== element.textContent
+                    );
+
+                const next =
+                    randomItem(available);
+
+                element.textContent = next;
+
+                element.classList.remove("changing");
+
+            }, 350);
+
+        }, 2000);
+    }
 
 
     /* =========================
@@ -727,18 +854,12 @@
        ========================= */
 
     function saveHistory() {
-
         try {
-
             localStorage.setItem(
                 "ai_conversation_history",
-                JSON.stringify(
-                    conversationHistory
-                )
+                JSON.stringify(conversationHistory)
             );
-
         } catch (error) {
-
             console.log(
                 "Не удалось сохранить историю",
                 error
@@ -756,52 +877,37 @@
                     "ai_conversation_history"
                 );
 
-
             if (!saved) {
-
                 renderHistory();
-
                 return;
             }
-
 
             const parsed =
                 JSON.parse(saved);
 
-
-            if (
-                Array.isArray(parsed)
-            ) {
-
-                conversationHistory =
-                    parsed;
+            if (Array.isArray(parsed)) {
+                conversationHistory = parsed;
             }
-
 
         } catch (error) {
 
-            conversationHistory =
-                [];
-        }
+            conversationHistory = [];
 
+        }
 
         renderHistory();
     }
 
 
     /* =========================
-       HISTORY SIDEBAR
+       HISTORY
        ========================= */
 
     function renderHistory() {
 
-        historyElement.innerHTML =
-            "";
+        historyElement.innerHTML = "";
 
-
-        if (
-            conversationHistory.length === 0
-        ) {
+        if (conversationHistory.length === 0) {
 
             const empty =
                 document.createElement("div");
@@ -812,19 +918,10 @@
             empty.textContent =
                 "История пока пуста";
 
-            historyElement.appendChild(
-                empty
-            );
+            historyElement.appendChild(empty);
 
             return;
         }
-
-
-        /*
-         * Показываем названия чатов.
-         * Пока каждый новый чат хранится
-         * как отдельная запись.
-         */
 
         const item =
             document.createElement("button");
@@ -832,69 +929,134 @@
         item.className =
             "history-item";
 
+        item.type = "button";
+
         item.textContent =
             currentChatTitle;
 
-
         item.addEventListener(
             "click",
-            () => {
-
-                restoreCurrentChat();
-
-            }
+            restoreCurrentChat
         );
 
-
-        historyElement.appendChild(
-            item
-        );
+        historyElement.appendChild(item);
     }
 
 
     function restoreCurrentChat() {
 
-        messages.innerHTML =
-            "";
+        stopWelcomeAnimation();
 
+        messages.innerHTML = "";
 
-        if (
-            conversationHistory.length === 0
-        ) {
-
+        if (conversationHistory.length === 0) {
             showWelcome();
-
             return;
         }
 
+        conversationHistory.forEach(message => {
 
-        conversationHistory.forEach(
-            message => {
+            if (message.role === "user") {
 
-                if (
-                    message.role === "user"
-                ) {
+                addMessageElement(
+                    message.content,
+                    "user"
+                );
 
-                    addMessageElement(
-                        message.content,
-                        "user"
-                    );
+            } else if (
+                message.role === "assistant"
+            ) {
 
-                } else if (
-                    message.role === "assistant"
-                ) {
-
-                    addMessageElement(
-                        message.content,
-                        "ai"
-                    );
-                }
-
+                addMessageElement(
+                    cleanAnswer(message.content),
+                    "ai"
+                );
             }
-        );
-
+        });
 
         scrollToBottom();
+    }
+
+
+    /* =========================
+       ANSWER CLEANING
+       ========================= */
+
+    function cleanAnswer(text) {
+
+        if (!text) {
+            return "";
+        }
+
+        let result = String(text);
+
+        /*
+         * Убираем markdown-заголовки:
+         * ### Заголовок -> Заголовок
+         */
+        result =
+            result.replace(
+                /^\s*#{1,6}\s*/gm,
+                ""
+            );
+
+        /*
+         * Убираем строки, состоящие
+         * только из декоративных символов.
+         */
+        result =
+            result.replace(
+                /^\s*(?:\*{3,}|_{3,}|-{3,}|={3,}|~{3,})\s*$/gm,
+                ""
+            );
+
+        /*
+         * Убираем подряд идущие
+         * декоративные звёздочки.
+         */
+        result =
+            result.replace(
+                /(\*{3,})/g,
+                ""
+            );
+
+        /*
+         * Убираем подряд идущие решётки.
+         */
+        result =
+            result.replace(
+                /#{3,}/g,
+                ""
+            );
+
+        /*
+         * Убираем подряд идущие подчёркивания.
+         */
+        result =
+            result.replace(
+                /_{3,}/g,
+                ""
+            );
+
+        /*
+         * Убираем чрезмерные пустые строки.
+         */
+        result =
+            result.replace(
+                /\n{3,}/g,
+                "\n\n"
+            );
+
+        /*
+         * Убираем пробелы перед переносами.
+         */
+        result =
+            result.replace(
+                /[ \t]+\n/g,
+                "\n"
+            );
+
+        return result.trim();
     }
 
 
@@ -902,17 +1064,13 @@
        ADD MESSAGE
        ========================= */
 
-    function addMessageElement(
-        text,
-        role
-    ) {
+    function addMessageElement(text, role) {
 
         const message =
             document.createElement("div");
 
         message.className =
             "message " + role;
-
 
         const content =
             document.createElement("div");
@@ -921,52 +1079,96 @@
             "message-content";
 
         content.textContent =
-            text;
+            role === "ai"
+                ? cleanAnswer(text)
+                : text;
 
+        message.appendChild(content);
 
-        message.appendChild(
-            content
-        );
-
-        messages.appendChild(
-            message
-        );
-
+        messages.appendChild(message);
 
         return content;
     }
 
 
+    /* =========================
+       WELCOME
+       ========================= */
+
     function showWelcome() {
 
-        messages.innerHTML =
-            `
+        stopWelcomeAnimation();
+
+        messages.innerHTML = `
             <div
                 class="welcome"
                 id="welcome"
             >
-                Чем могу помочь?
+                ${randomItem(welcomePhrases)}
             </div>
-            `;
+        `;
+
+        startWelcomeAnimation();
     }
 
 
+    function hideWelcome() {
+
+        const welcome =
+            document.getElementById("welcome");
+
+        if (!welcome) {
+            return;
+        }
+
+        welcome.classList.add("changing");
+
+        setTimeout(() => {
+
+            const current =
+                document.getElementById("welcome");
+
+            if (current) {
+                current.style.display = "none";
+            }
+
+        }, 350);
+
+        stopWelcomeAnimation();
+    }
+
+
+    /* =========================
+       SCROLL
+       ========================= */
+
     function scrollToBottom() {
 
-        requestAnimationFrame(
-            () => {
+        requestAnimationFrame(() => {
 
-                chat.scrollTop =
-                    chat.scrollHeight;
+            chat.scrollTop =
+                chat.scrollHeight;
 
-            }
-        );
+        });
     }
 
 
     /* =========================
        MODEL MENU
        ========================= */
+
+    function closeModelMenu() {
+
+        modelMenu.classList.remove("open");
+
+        modelButton.classList.remove("open");
+
+        modelButton.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+
 
     modelButton.addEventListener(
         "click",
@@ -975,10 +1177,7 @@
             event.stopPropagation();
 
             const isOpen =
-                modelMenu.classList.contains(
-                    "open"
-                );
-
+                modelMenu.classList.contains("open");
 
             if (isOpen) {
 
@@ -986,87 +1185,64 @@
 
             } else {
 
-                modelMenu.classList.add(
-                    "open"
-                );
+                modelMenu.classList.add("open");
 
-                modelButton.classList.add(
-                    "open"
+                modelButton.classList.add("open");
+
+                modelButton.setAttribute(
+                    "aria-expanded",
+                    "true"
                 );
             }
         }
     );
 
 
-    modelOptions.forEach(
-        option => {
+    modelOptions.forEach(option => {
 
-            option.addEventListener(
-                "click",
-                function(event) {
+        option.addEventListener(
+            "click",
+            function(event) {
 
-                    event.stopPropagation();
+                event.stopPropagation();
 
-
-                    selectedModelKey =
-                        this.dataset.model;
-
-
-                    selectedModel.textContent =
-                        this.dataset.name;
-
-
-                    modelOptions.forEach(
-                        item => {
-
-                            item.classList.remove(
-                                "selected"
-                            );
-
-                            item.querySelector(
-                                ".check"
-                            ).textContent =
-                                "";
-                        }
-                    );
-
-
-                    this.classList.add(
-                        "selected"
-                    );
-
-
-                    this.querySelector(
-                        ".check"
-                    ).textContent =
-                        "✓";
-
-
-                    closeModelMenu();
+                if (isGenerating) {
+                    return;
                 }
-            );
-        }
-    );
 
+                selectedModelKey =
+                    this.dataset.model;
 
-    function closeModelMenu() {
+                selectedModel.textContent =
+                    this.dataset.name;
 
-        modelMenu.classList.remove(
-            "open"
+                modelOptions.forEach(item => {
+
+                    item.classList.remove("selected");
+
+                    const check =
+                        item.querySelector(".check");
+
+                    if (check) {
+                        check.textContent = "";
+                    }
+                });
+
+                this.classList.add("selected");
+
+                this.querySelector(".check")
+                    .textContent = "✓";
+
+                closeModelMenu();
+            }
         );
-
-        modelButton.classList.remove(
-            "open"
-        );
-    }
+    });
 
 
     document.addEventListener(
         "click",
         function() {
-
             closeModelMenu();
-
         }
     );
 
@@ -1077,42 +1253,48 @@
 
     async function sendMessage() {
 
-        const text =
-            input.value.trim();
-
-
-        if (
-            !text ||
-            isGenerating
-        ) {
-
+        /*
+         * Самая ранняя защита.
+         * Повторный click / Enter во время
+         * запроса ничего не делает.
+         */
+        if (isGenerating) {
             return;
         }
 
+        const text =
+            input.value.trim();
 
-        isGenerating =
-            true;
-
-        send.disabled =
-            true;
-
-
-        if (welcome) {
-
-            welcome.style.display =
-                "none";
+        if (!text) {
+            input.focus();
+            return;
         }
 
+        /*
+         * Блокируем запрос ДО любой
+         * асинхронной операции.
+         */
+        isGenerating = true;
+        send.disabled = true;
+        input.disabled = true;
 
-        addMessageElement(
-            text,
-            "user"
-        );
+        hideWelcome();
 
+        /*
+         * ВАЖНО:
+         * добавляем новое сообщение в историю
+         * ДО отправки на сервер.
+         *
+         * Поэтому второй запрос уже получает
+         * первый вопрос пользователя.
+         */
+        conversationHistory.push({
+            role: "user",
+            content: text
+        });
 
         if (
-            currentChatTitle ===
-            "Новый чат"
+            currentChatTitle === "Новый чат"
         ) {
 
             currentChatTitle =
@@ -1121,16 +1303,14 @@
                     : text;
         }
 
-
         const historyForServer =
             conversationHistory.slice(-20);
 
+        input.value = "";
 
-        input.value =
-            "";
+        input.style.height = "40px";
 
-        input.style.height =
-            "40px";
+        renderHistory();
 
 
         /* =====================
@@ -1143,13 +1323,11 @@
         message.className =
             "message ai";
 
-
         const content =
             document.createElement("div");
 
         content.className =
             "message-content";
-
 
         const loading =
             document.createElement("div");
@@ -1157,13 +1335,11 @@
         loading.className =
             "ai-loading";
 
-
         const loadingText =
             document.createElement("span");
 
         loadingText.textContent =
             "Рассуждение";
-
 
         const dots =
             document.createElement("div");
@@ -1171,48 +1347,26 @@
         dots.className =
             "loading-dots";
 
-
-        for (
-            let i = 0;
-            i < 3;
-            i++
-        ) {
+        for (let i = 0; i < 3; i++) {
 
             const dot =
                 document.createElement("span");
 
-            dots.appendChild(
-                dot
-            );
+            dots.appendChild(dot);
         }
 
+        loading.appendChild(loadingText);
+        loading.appendChild(dots);
 
-        loading.appendChild(
-            loadingText
-        );
-
-        loading.appendChild(
-            dots
-        );
-
-        content.appendChild(
-            loading
-        );
-
-        message.appendChild(
-            content
-        );
-
-        messages.appendChild(
-            message
-        );
-
+        content.appendChild(loading);
+        message.appendChild(content);
+        messages.appendChild(message);
 
         scrollToBottom();
 
 
         /* =====================
-           LOADING WORDS
+           LOADING STATUS
            ===================== */
 
         const statuses = [
@@ -1224,36 +1378,23 @@
             "Готовлю ответ"
         ];
 
-
         let statusIndex = 0;
 
-
         const statusTimer =
-            setInterval(
-                () => {
+            setInterval(() => {
 
-                    statusIndex =
-                        (
-                            statusIndex + 1
-                        ) %
-                        statuses.length;
+                statusIndex =
+                    (statusIndex + 1) %
+                    statuses.length;
 
+                loadingText.textContent =
+                    statuses[statusIndex];
 
-                    loadingText.textContent =
-                        statuses[
-                            statusIndex
-                        ];
-
-                },
-                2000
-            );
+            }, 2000);
 
 
-        let fullAnswer =
-            "";
-
-        let gotFirstToken =
-            false;
+        let fullAnswer = "";
+        let gotFirstToken = false;
 
 
         try {
@@ -1269,19 +1410,19 @@
                                 "application/json"
                         },
 
-                        body:
-                            JSON.stringify({
+                        body: JSON.stringify({
 
-                                message:
-                                    text,
+                            message: text,
 
-                                history:
-                                    historyForServer,
+                            history:
+                                historyForServer.slice(
+                                    0,
+                                    -1
+                                ),
 
-                                model:
-                                    selectedModelKey
-
-                            })
+                            model:
+                                selectedModelKey
+                        })
                     }
                 );
 
@@ -1291,36 +1432,33 @@
                 let errorMessage =
                     "Ошибка сервера";
 
-
                 try {
 
                     const errorData =
                         await response.json();
 
-
-                    if (
-                        errorData.error
-                    ) {
-
+                    if (errorData.error) {
                         errorMessage =
                             errorData.error;
                     }
 
                 } catch (error) {
 
-                    const raw =
-                        await response.text();
+                    try {
 
-                    if (raw) {
-                        errorMessage =
-                            raw;
+                        const raw =
+                            await response.text();
+
+                        if (raw) {
+                            errorMessage = raw;
+                        }
+
+                    } catch (_) {
+                        /* ignore */
                     }
                 }
 
-
-                throw new Error(
-                    errorMessage
-                );
+                throw new Error(errorMessage);
             }
 
 
@@ -1335,15 +1473,10 @@
             const reader =
                 response.body.getReader();
 
-
             const decoder =
-                new TextDecoder(
-                    "utf-8"
-                );
+                new TextDecoder("utf-8");
 
-
-            let buffer =
-                "";
+            let buffer = "";
 
 
             while (true) {
@@ -1351,12 +1484,9 @@
                 const result =
                     await reader.read();
 
-
                 if (result.done) {
-
                     break;
                 }
-
 
                 buffer +=
                     decoder.decode(
@@ -1366,40 +1496,28 @@
                         }
                     );
 
-
                 const lines =
                     buffer.split("\n");
-
 
                 buffer =
                     lines.pop() || "";
 
 
-                for (
-                    const line of lines
-                ) {
+                for (const line of lines) {
 
                     if (
-                        !line.startsWith(
-                            "data: "
-                        )
+                        !line.startsWith("data: ")
                     ) {
-
                         continue;
                     }
 
-
                     const data =
-                        line.substring(
-                            6
-                        ).trim();
+                        line
+                            .substring(6)
+                            .trim();
 
 
-                    if (
-                        data ===
-                        "[DONE]"
-                    ) {
-
+                    if (data === "[DONE]") {
                         continue;
                     }
 
@@ -1407,15 +1525,10 @@
                     try {
 
                         const event =
-                            JSON.parse(
-                                data
-                            );
+                            JSON.parse(data);
 
 
-                        if (
-                            event.error
-                        ) {
-
+                        if (event.error) {
                             throw new Error(
                                 event.error
                             );
@@ -1423,26 +1536,19 @@
 
 
                         if (
-                            event.type ===
-                                "text" &&
+                            event.type === "text" &&
                             event.text
                         ) {
 
-                            if (
-                                !gotFirstToken
-                            ) {
+                            if (!gotFirstToken) {
 
-                                gotFirstToken =
-                                    true;
-
+                                gotFirstToken = true;
 
                                 clearInterval(
                                     statusTimer
                                 );
 
-
                                 loading.remove();
-
 
                                 content.textContent =
                                     "";
@@ -1452,10 +1558,15 @@
                             fullAnswer +=
                                 event.text;
 
-
+                            /*
+                             * Во время streaming
+                             * тоже очищаем декоративный
+                             * мусор.
+                             */
                             content.textContent =
-                                fullAnswer;
-
+                                cleanAnswer(
+                                    fullAnswer
+                                );
 
                             scrollToBottom();
                         }
@@ -1468,7 +1579,6 @@
                                 "Unexpected token"
                             )
                         ) {
-
                             throw error;
                         }
                     }
@@ -1476,60 +1586,72 @@
             }
 
 
-            clearInterval(
-                statusTimer
-            );
+            clearInterval(statusTimer);
 
 
-            if (!fullAnswer) {
+            const cleanedAnswer =
+                cleanAnswer(fullAnswer);
+
+
+            if (!cleanedAnswer) {
 
                 loading.remove();
 
                 content.textContent =
                     "ИИ не вернул ответ.";
+
+            } else {
+
+                content.textContent =
+                    cleanedAnswer;
             }
 
 
-            /* =====================
-               SAVE HISTORY
-               ===================== */
-
-            conversationHistory.push(
-                {
-                    role: "user",
-                    content: text
-                }
-            );
-
-
-            conversationHistory.push(
-                {
-                    role: "assistant",
-                    content:
-                        fullAnswer
-                }
-            );
-
+            /*
+             * Ассистентский ответ добавляется
+             * после завершения streaming.
+             */
+            conversationHistory.push({
+                role: "assistant",
+                content: cleanedAnswer
+            });
 
             saveHistory();
-
             renderHistory();
 
 
         } catch (error) {
 
-            clearInterval(
-                statusTimer
-            );
-
+            clearInterval(statusTimer);
 
             loading.remove();
+
+            /*
+             * Если сервер не ответил,
+             * убираем пользовательское сообщение
+             * из истории, чтобы не сохранять
+             * несуществующий диалог.
+             */
+            if (
+                conversationHistory.length > 0 &&
+                conversationHistory[
+                    conversationHistory.length - 1
+                ].role === "user" &&
+                conversationHistory[
+                    conversationHistory.length - 1
+                ].content === text
+            ) {
+
+                conversationHistory.pop();
+
+                saveHistory();
+                renderHistory();
+            }
 
 
             content.textContent =
                 "Ошибка: " +
-                error.message;
-
+                (error.message || "Неизвестная ошибка");
 
             console.error(
                 "Chat error:",
@@ -1539,15 +1661,15 @@
         } finally {
 
             /*
-             * Кнопка ВСЕГДА снова активируется,
-             * даже если произошла ошибка.
+             * Кнопка и поле ВСЕГДА возвращаются
+             * в рабочее состояние.
              */
+            clearInterval(statusTimer);
 
-            isGenerating =
-                false;
+            isGenerating = false;
 
-            send.disabled =
-                false;
+            send.disabled = false;
+            input.disabled = false;
 
             input.focus();
 
@@ -1562,7 +1684,16 @@
 
     send.addEventListener(
         "click",
-        sendMessage
+        function(event) {
+
+            event.preventDefault();
+
+            if (isGenerating) {
+                return;
+            }
+
+            sendMessage();
+        }
     );
 
 
@@ -1581,6 +1712,10 @@
 
                 event.preventDefault();
 
+                if (isGenerating) {
+                    return;
+                }
+
                 sendMessage();
             }
         }
@@ -1595,9 +1730,7 @@
         "input",
         function() {
 
-            this.style.height =
-                "40px";
-
+            this.style.height = "40px";
 
             this.style.height =
                 Math.min(
@@ -1616,30 +1749,65 @@
         "click",
         function() {
 
-            conversationHistory =
-                [];
+            if (isGenerating) {
+                return;
+            }
+
+            conversationHistory = [];
 
             currentChatTitle =
                 "Новый чат";
 
-
             saveHistory();
-
             renderHistory();
 
             showWelcome();
 
+            setRandomPlaceholder();
 
-            input.value =
-                "";
+            input.value = "";
 
-            input.style.height =
-                "40px";
-
+            input.style.height = "40px";
 
             input.focus();
         }
     );
+
+
+    /* =========================
+       PLACEHOLDER ROTATION
+       ========================= */
+
+    function startPlaceholderRotation() {
+
+        if (placeholderTimer) {
+            clearInterval(placeholderTimer);
+        }
+
+        setRandomPlaceholder();
+
+        placeholderTimer =
+            setInterval(() => {
+
+                /*
+                 * Пока пользователь что-то пишет,
+                 * placeholder не меняем.
+                 */
+                if (input.value.trim()) {
+                    return;
+                }
+
+                input.style.setProperty(
+                    "--placeholder-opacity",
+                    "0"
+                );
+
+                input.placeholder = randomItem(
+                    placeholders
+                );
+
+            }, 3500);
+    }
 
 
     /* =========================
@@ -1648,10 +1816,13 @@
 
     loadHistory();
 
+    startPlaceholderRotation();
+
+    startWelcomeAnimation();
+
     input.focus();
 
 </script>
 
 </body>
 </html>
-```
